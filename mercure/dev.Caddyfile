@@ -24,7 +24,6 @@
 		# Subscriber JWT key
 		subscriber_jwt {env.MERCURE_SUBSCRIBER_JWT_KEY} {env.MERCURE_SUBSCRIBER_JWT_ALG}
 		# Permissive configuration for the development environment
-		cors_origins *
 		publish_origins *
 		demo
 		anonymous
@@ -37,8 +36,8 @@
 
 	redir / /.well-known/mercure/ui/
 
-	respond /healthz 200
+	respond /healthz "goed heur" 200
 	respond /robots.txt `User-agent: *
 	Disallow: /`
-	respond "Not Found" 404
+	respond "Not Found lol" 404
 }

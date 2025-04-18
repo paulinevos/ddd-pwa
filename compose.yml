@@ -12,27 +12,23 @@ services:
       - '8081:8081'
     volumes:
       - ./:/opt/ddd-pwa/
-    healthcheck:
-      disable: true
-
   tokens:
     container_name: ddd-server
-    image: synon/ddd_game_server:d8c6623
-#    image: sha256:d8c562d9b63af87d149d9112494522788a5d1c8da5cdb427493bdb4a88d80701
+    image: synon/ddd_game_server:d1bbd6e
     ports:
       - '3000:3000'
-
   hub:
     image: dunglas/mercure:v0.17
     container_name: ddd-hub
     restart: unless-stopped
     environment:
       # Uncomment the following line to disable HTTPS
-      SERVER_NAME: ':80'
+      # SERVER_NAME: ':80'
       MERCURE_PUBLISHER_JWT_KEY: '!ChangeThisMercureHubJWTSecretKey!'
       MERCURE_SUBSCRIBER_JWT_KEY: '!ChangeThisMercureHubJWTSecretKey!'
+      MERCURE_EXTRA_DIRECTIVES: 'cors_origins http://localhost:8081 http://127.0.0.1:8081'
     # Uncomment the following line to enable the development mode
-    command: /usr/bin/caddy run --config /etc/caddy/dev.Caddyfile
+    command: /usr/bin/caddy run --config /config/caddy/dev.Caddyfile
     healthcheck:
       test: [ "CMD", "curl", "-f", "https://localhost/healthz" ]
       timeout: 5s
@@ -41,8 +37,5 @@ services:
     ports:
       - '8001:80'
       - '443:443'
-#    volumes:
-#      - mercure:/etc/caddy
-
-#volumes:
-#  mercure:
+    volumes:
+      - ./mercure:/config/caddy

@@ -1,37 +1,54 @@
-import React, {useEffect, useState} from "react";
+import React, {useContext, useEffect, useState} from "react";
 import GameMenu from "@/components/ui/GameMenu";
 import {SafeAreaView} from "react-native";
 import {EventSource} from "eventsource/src";
-import {connect, onMessageHandled} from "@/utils/message_handling";
+import {activeSubscriptions, connect, onMessageHandled, parseToken} from "@/utils/message_handling";
 import {MessageType} from "@/utils/messages";
-import {Player} from "@/utils/game_data";
+import {addPlayer, commitState, GameContext, GameState, Player, useGameContext} from "@/utils/game_data";
 import {useCookies} from "react-cookie";
-function GameView({renderContent, players, setPlayers}) {
-    const [ cookies ] = useCookies(['mercureAuthorization'])
+import WaitingRoom from "@/components/WaitingRoom";
+import AvatarSelectionScreen from "@/components/AvatarSelectionScreen";
+import {state} from "sucrase/dist/types/parser/traverser/base";
 
-    useEffect(() => {
-        console.debug('Connecting to event source')
-        const events: EventSource = connect(cookies.mercureAuthorization)
+function GameView() {
+  const [ cookies ] = useCookies(['mercureAuthorization'])
+  const { gameState, setGameState } = useGameContext()
+  const [ players, setPlayers ] = useState(gameState?.players || [])
 
-        events.addEventListener('message', (e) => {
-            const data = JSON.parse(e.data)
-            const { type, payload } = data
+  useEffect(() => {
+    const newState = {...gameState, players};
+    setGameState(newState)
+    commitState(newState)
+  }, [players]);
 
-            switch (type) {
-                case MessageType.PlayerJoined:
-                    const { id, displayName, avatar } = payload
-                    setPlayers([
-                        ...players,
-                        new Player(id, displayName, avatar)
-                    ])
-            }
+  useEffect(() => {
+    console.debug('Connecting to event source')
+    const token = cookies.mercureAuthorization
 
-            onMessageHandled(e)
+    const parsed = parseToken(token)
+    if (parsed.isHost()) {
+        // Listen to active subscriptions
+        const subscriptions = activeSubscriptions(token)
+        subscriptions.addEventListener('message', (e) => {
+            console.debug('Subscription update:', e)
         })
+    }
 
-    }, [])
+    const events: EventSource = connect(token)
+    events.addEventListener('message', (e) => {
+      const data = JSON.parse(e.data)
+      const { type, payload } = data
 
-    return (
+      switch (type) {
+        case MessageType.PlayerJoined:
+          setPlayers([...players, payload as Player])
+      }
+    })
+
+  }, [cookies.mercureAuthorization])
+
+  return (
+    <GameContext.Provider value={{gameState, setGameState}}>
         <SafeAreaView
             style={{
                 flex: 1,
@@ -42,9 +59,14 @@ function GameView({renderContent, players, setPlayers}) {
             }}
         >
             <GameMenu />
-            { renderContent() }
+            {
+                gameState && players.length > 0
+                    ? <WaitingRoom />
+                    : <AvatarSelectionScreen />
+            }
         </SafeAreaView>
-    )
+    </GameContext.Provider>
+  )
 }
 
 export default GameView

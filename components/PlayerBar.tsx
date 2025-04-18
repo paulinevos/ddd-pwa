@@ -1,16 +1,16 @@
-import {StyleSheet, TouchableNativeFeedbackComponent} from "react-native";
+import {StyleSheet, TouchableOpacity} from "react-native";
 import React from 'react';
 
 function PlayerBar({player}) {
+    console.debug('PLAYER', player)
     const styles = StyleSheet.create({
+
     });
 
     return (
-        <TouchableNativeFeedbackComponent>
-            <Text>
-                { player.displayName }
-            </Text>
-        </TouchableNativeFeedbackComponent>
+        <TouchableOpacity>
+            { player.displayName }
+        </TouchableOpacity>
     )
 }
 

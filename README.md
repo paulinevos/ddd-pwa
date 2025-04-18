@@ -1,50 +1,30 @@
-# Welcome to your Expo app 👋
+# DDD PWA
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+### Development
+To run:
 
-## Get started
+1. `docker compose up -d` This spins up the three containers (explained under [Architecture](#architecture))
+2. Navigate to https://localhost/.well-known/mercure/ui/ and **accept the certificate** in your browser. Usually you'll
+be presented with a warning screen and have to click "Advanced" and then "accept risk and continue" (depending on
+your browser). This will accept the self-signed certificate the Mercure hub needs for SSL.
+3. The app will be running at `http://localhost:8081`. You'll want to view it in mobile view.
 
-1. Install dependencies
+### Troubleshooting
+#### 1. Can't connect to Mercure hub (SSL error in Network tab)
+This probably means you haven't accepted the certificate in your browser. Refer to point #2 under
+[Development](#development.
 
-   ```bash
-   npm install
-   ```
 
-2. Start the app
+### Architecture
+The app runs three services:
+1. Expo (client-side) which is React native.
+2. The token server (Rust), which manages and grants JWTs to players, so they can authenticate.
+3. The Mercure hub (authenticated by JWT) for real-time messaging between clients.
 
-   ```bash
-    npx expo start
-   ```
+Every player subscribes to three topics:
+1. The game topic (/{gameCode}), for game-wide updates (such as `PlayerJoined` or `GameStarted`),
+2. The user's private topic (/{gameCode}/{userId}) for user-specific updates, such as a card draw,
+3. [Active subscriptions](https://mercure.rocks/spec#active-subscriptions) for the game topic, to show any disconnected
+and reconnected users.
 
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
-
-```bash
-npm run reset-project
-```
-
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
-
-## Learn more
-
-To learn more about developing your project with Expo, look at the following resources:
-
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+The host's client manages the card deck and publishes to the game topic and users' topics.

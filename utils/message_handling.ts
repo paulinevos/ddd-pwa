@@ -1,6 +1,6 @@
 import {EventSource} from 'eventsource'
 import {Message, MessageType} from "@/utils/messages";
-import { GameState } from "@/utils/game_data";
+import {initGameState} from "@/utils/game_data";
 
 const KeyLastEventId = 'ddd_lastEventId'
 const hubUrl = `${process.env.EXPO_PUBLIC_MERCURE_HUB}/.well-known/mercure`
@@ -8,11 +8,12 @@ const connect = (token: string): EventSource => {
     const payload = parseToken(token)
 
     if (payload.isHost()) {
-        GameState.init(payload.userId, payload.code)
+        initGameState(payload.userId, payload.code)
     }
 
     const url = new URL(hubUrl)
-    const topic = `https://localhost/.well-known/mercure/${payload.code}`
+    const base = 'https://localhost/.well-known/mercure/'
+    const topic = `${base}${payload.code}`
 
     url.searchParams.append('topic', topic)
     url.searchParams.append('topic', `${topic}/${payload.userId}`)
@@ -21,16 +22,15 @@ const connect = (token: string): EventSource => {
         url.searchParams.append('lastEventID', <string>localStorage.getItem(KeyLastEventId))
     }
 
-    const events: EventSource = new EventSource(url);
-
-    console.debug('Connected to event source...', url)
-
-    return events
+    return new EventSource(url, {withCredentials: true})
 }
 
-const onMessageHandled = (e: MessageEvent) => {
-    sessionStorage.setItem(KeyLastEventId, e.lastEventId)
-    // Apply to game state
+const activeSubscriptions = (token: string): EventSource => {
+    const url = new URL(`${hubUrl}`)
+    url.searchParams.append('topic', '/.well-known/mercure/subscriptions{/topic}{/subscriber}')
+
+    console.debug('Listening to active subscriptions')
+    return new EventSource(url);
 }
 
 class OutgoingMessage {
@@ -41,25 +41,22 @@ class OutgoingMessage {
         this.payload = payload;
     }
 }
+
 const send = async (token: string, message: Message) => {
     const outgoing = createOutGoing(token, message)
     const url = new URL(hubUrl)
 
-    console.debug("Outgoing message: ", outgoing)
+    const data = new URLSearchParams();
+    data.append('topic', outgoing.topic);
+    data.append('data', JSON.stringify(outgoing.payload));
 
-    const params = new URLSearchParams()
-    params.append('topic', outgoing.topic)
-    params.append('data', JSON.stringify(outgoing.payload))
-
-    const headers = new Headers()
-    headers.append('Content-Type', 'application/x-www-form-urlencoded;charset=UTF-8')
-    // headers.append('Authorization', `Bearer ${token}`)
     await fetch(url.toString(), {
-        headers,
-        credentials: 'include',
-        mode: 'no-cors',
-        method: 'post',
-        body: params
+        headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': "application/x-www-form-urlencoded"
+        },
+        method: 'POST',
+        body: data,
     })
 }
 
@@ -107,4 +104,4 @@ const topicForMessageType = (base: string, type: MessageType): string => {
     }
 }
 
-export { connect, send, createOutGoing, onMessageHandled }
+export { connect, send, createOutGoing, activeSubscriptions, parseToken }

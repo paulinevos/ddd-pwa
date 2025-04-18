@@ -1,10 +1,11 @@
 import CodeInput from "@/components/CodeInput";
 import {Image, SafeAreaView, Text} from "react-native";
 import {useState} from "react";
-import { Button, ButtonColor, ButtonProps } from "@/components/ui/Button";
+import { Button, ButtonColor } from "@/components/ui/Button";
 import Loading from "@/components/ui/Loading";
 import {useCookies} from "react-cookie";
 import {hostGame, joinGame} from "@/utils/token_server";
+import logo from '../assets/images/ddd_logo_cards.png'
 
 function HomeScreen() {
     const [loading, setLoading] = useState(true)
@@ -15,20 +16,23 @@ function HomeScreen() {
         const { token, error } = await hostGame()
 
         if (!error) {
-            return setCookie('mercureAuthorization', token)
+            return setCookie(
+              'mercureAuthorization',
+              token,
+            )
         }
 
         setError(error.message)
     }
 
     const getPlayerToken = async (setCookie: Function) => {
-        const { token, error } = await joinGame(code)
+      const { token, error } = await joinGame(code)
 
-        if (!error) {
-            return setCookie('mercureAuthorization', token)
-        }
+      if (!error) {
+          return setCookie('mercureAuthorization', token)
+      }
 
-        setError(error.message)
+      setError(error.message)
     }
 
     return (
@@ -43,7 +47,7 @@ function HomeScreen() {
         >
             { loading && <Loading/> }
             <Image
-                source={require('../assets/images/ddd_logo_cards.png')}
+                source={logo}
                 style={{
                     marginTop: -200,
                 }}
@@ -69,6 +73,7 @@ function HomeScreen() {
                     }
                     <Button
                         color={ButtonColor.Blue}
+                        disabled={code.length !== 4}
                         handlePress={() => getPlayerToken(setCookie)}
                         text="join game"
                     />

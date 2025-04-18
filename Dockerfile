@@ -1,5 +1,5 @@
 # pull base image
-FROM node:23-bullseye-slim
+FROM node:23.5-bullseye-slim
 
 # set our node environment, either development or production
 # defaults to production, compose overrides this to development on build and run

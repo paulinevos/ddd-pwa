@@ -1,16 +1,26 @@
 import PlayerBar from "@/components/PlayerBar";
-import {useState} from "react";
+import {useContext, useState} from "react";
+import {GameContext} from "@/utils/game_data";
+import {ScrollView} from "react-native";
 function WaitingRoom() {
-    // ToDo: replace with consuming from context
-    const [players] = useState([])
+    const { gameState, setGameState } = useContext(GameContext)
+    const { players } = gameState
+
+    const styles = {
+        scrollView: {
+            flexGrow: 0,
+            width: '120%',
+            padding: 5,
+            top: '-37%',
+        }
+    }
 
     return (
-        <>
+        <ScrollView style={styles.scrollView}>
             {
-                players.map(player => <PlayerBar key={player.id} player />)
+                players.map(player => <PlayerBar key={player.id} player={player} />)
             }
-            waiting for de other ppls hehe
-        </>
+        </ScrollView>
     )
 }
 

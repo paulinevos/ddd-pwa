@@ -14,9 +14,11 @@ const fetchToken = async (path: string, code: string | null = null): Promise<Tok
     try {
         const url = `${ base }/${ path }${ code ? `?code=${code}` : ''}`
         const res = await fetch(url)
-        const { token } = await res.json()
+        const body = await res.json()
 
-        return new TokenResponse(token)
+        const {token, error} = body
+
+        return new TokenResponse(token, error)
     } catch (e) {
         return new TokenResponse(null, e)
     }

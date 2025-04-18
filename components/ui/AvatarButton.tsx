@@ -6,7 +6,8 @@ type AvatarButtonProps = {
 };
 
 const AvatarButton = ({handlePress, image, selected}) => {
-    return (<TouchableOpacity
+    return (
+      <TouchableOpacity
         onPress={ () => handlePress(image) }
         style={{
             backgroundColor: selected? '#FFA3A3' : '#FFFFFF',

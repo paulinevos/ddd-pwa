@@ -1,4 +1,4 @@
-import {Context, createContext} from "react";
+import {createContext, useContext} from "react";
 
 const KeyGameState = 'ddd_gameState'
 class Player {
@@ -6,7 +6,7 @@ class Player {
     displayName: string
     avatar: string
 
-    constructor(id: string, displayName: string, avatar: string) {
+    constructor({id, displayName, avatar}) {
         this.id = id;
         this.displayName = displayName;
         this.avatar = avatar;
@@ -18,41 +18,42 @@ enum Status {
     Started,
     Ended,
 }
-class GameState {
-    hostId: string
-    code: string
-    players: any[]
-    lastEventId: string | null
-    state: Status
 
-    constructor(
-        hostId: string,
-        code: string,
-        state: Status = Status.Waiting,
-        players: Player[] = [],
-        lastEventId: string | null = null,
-    ) {
-        this.hostId = hostId
-        this.code = code
-        this.players = players
-        this.lastEventId = lastEventId
-        this.state = state
-    }
+type GameState = {
+    hostId: string;
+    code: string;
+    players: Player[];
+    lastEventId: string|null,
+    status: Status,
+}
 
-    static init(hostId: string, code: string): GameState {
-        const init = new GameState(hostId, code)
-        localStorage.setItem(KeyGameState, JSON.stringify(init))
-        return init
-    }
+const commitState = (state: GameState) => localStorage.setItem(KeyGameState, JSON.stringify(state))
 
-    static destroy() {
-        localStorage.removeItem(KeyGameState)
+const initGameState = (hostId: string, code: string): GameState => {
+    return {
+        hostId,
+        code,
+        players: [],
+        status: Status.Waiting,
+    } as GameState
+}
+
+const fetchStateFromStorage = (): GameState => {
+    if (typeof window !== 'undefined') {
+        const json = <string>localStorage.getItem(KeyGameState)
+        return JSON.parse(json) as GameState
     }
 }
 
+const destroyState = (state: GameState) => {
+    localStorage.removeItem(KeyGameState)
+}
+
 const GameContext = createContext({
-    state: null,
-    setState: () => {}
+    gameState: fetchStateFromStorage(),
+    setGameState: (state: GameState) => {}
 })
 
-export { GameState, GameContext, Player }
+const useGameContext = () => useContext(GameContext);
+
+export { GameState, GameContext, useGameContext, Player, commitState, initGameState, fetchStateFromStorage, destroyState }

@@ -13,12 +13,19 @@ type ButtonProps = {
     title: string;
     color: ButtonColor
 };
-const Button = ({color, handlePress, text}) => {
+const Button = ({color, handlePress, text, disabled}: {
+  color: ButtonColor,
+  handlePress: Function,
+  text: string,
+  disabled?: boolean,
+}) => {
     return (<TouchableOpacity
         onPress={ handlePress }
+        disabled={disabled || false}
         style={{
             width: "80%",
             backgroundColor: color,
+            opacity: disabled ? 0.4 : 1,
             padding: 15,
             margin: 20,
             borderWidth: 1,

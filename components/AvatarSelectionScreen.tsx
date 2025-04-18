@@ -1,7 +1,7 @@
-import React, {useEffect, useState} from "react";
+import React, {Fragment, useEffect, useState} from "react";
 import {ScrollView, StyleSheet, Text, TextInput, TouchableOpacity} from "react-native";
 import {AvatarButton} from "@/components/ui/AvatarButton";
-import {send} from "@/utils/message_handling";
+import {parseToken, send} from "@/utils/message_handling";
 import {useCookies} from "react-cookie";
 import {Message, MessageType} from "@/utils/messages";
 
@@ -16,8 +16,9 @@ const avatars = [
     require(`../assets/images/avatars/coconutty.png`),
 ]
 
-const [ cookies ] = useCookies(['mercureAuthorization']);
 const AvatarSelectionScreen = () => {
+    const [ cookies ] = useCookies(['mercureAuthorization']);
+
     const [displayName, setDisplayName] = useState("")
     const [selected, setSelected] = useState(null)
     const [submitted, setSubmitted] = useState(false)
@@ -27,16 +28,19 @@ const AvatarSelectionScreen = () => {
 
     useEffect(() => {
         async function handleSubmit() {
+            const parsed = parseToken(token)
+
             await send(token, new Message(MessageType.PlayerJoined, {
-                id: token.userId,
+                id: parsed.userId,
                 displayName,
                 avatar: selected
             }))
         }
-        console.debug(submitted)
+
         if (submitted) {
             handleSubmit()
-                .then(() => console.log('jaaa :)'))
+                .then(() => { /* do nothing lol */} )
+          // If there's an error, show error.
         }
     }, [submitted])
 
@@ -84,13 +88,16 @@ const AvatarSelectionScreen = () => {
                 style={styles.scrollView}
             >
                 {
-                    avatars.map((avatar: object) => {
-                        return (<AvatarButton
-                            key={avatar.uri}
-                            image={avatar}
-                            selected={avatar == selected}
-                            handlePress={ setSelected }
-                        />)
+                    avatars.map((avatar: object, index) => {
+                        return (
+                          <div key={index}>
+                            <AvatarButton
+                              image={avatar}
+                              selected={avatar === selected}
+                              handlePress={ setSelected }
+                            />
+                          </div>
+                        )
                     })
                 }
             </ScrollView>
