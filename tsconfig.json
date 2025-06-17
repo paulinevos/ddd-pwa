@@ -5,6 +5,12 @@
     "paths": {
       "@/*": [
         "./*"
+      ],
+      "@/theme/*": [
+        "./theme/*"
+      ],
+      "@/theme": [
+        "./theme/index.ts"
       ]
     }
   },

@@ -38,7 +38,7 @@ function GameView() {
     events.addEventListener('message', (e) => {
       const data = JSON.parse(e.data)
       const { type, payload } = data
-
+            //game controller switch (start, end)
       switch (type) {
         case MessageType.PlayerJoined:
           setPlayers([...players, payload as Player])

@@ -1,6 +1,8 @@
 enum MessageType {
     PlayerJoined,
     InitiateGameState,
+    GameStarted,
+    GameEnded,
 }
 
 class Message {

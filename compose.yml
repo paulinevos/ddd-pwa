@@ -7,6 +7,10 @@ services:
         - NODE_ENV=development
     environment:
       - NODE_ENV=development
+      - EXPO_PUBLIC_TOKEN_SERVER_PROTOCOL=http
+      - EXPO_PUBLIC_TOKEN_SERVER_HOST=tokens
+      - EXPO_PUBLIC_TOKEN_SERVER_PORT=3000
+      - EXPO_DEVTOOLS_LISTEN_ADDRESS=0.0.0.0
     tty: true
     ports:
       - '8081:8081'
@@ -15,10 +19,17 @@ services:
   tokens:
     container_name: ddd-server
     image: synon/ddd_game_server:d1bbd6e
+    platform: linux/amd64 # Specify platform to handle ARM64 to AMD64 translation
+    # Build with socat for port forwarding since server only listens on 127.0.0.1
+    entrypoint: >
+      sh -c "apt-get update && apt-get install -y socat && 
+      (socat TCP-LISTEN:3000,fork,reuseaddr TCP:127.0.0.1:3000 &) && 
+      ndd/ /aep/.jdex"j
     ports:
       - '3000:3000'
   hub:
     image: dunglas/mercure:v0.17
+    platform: linux/amd64 # Handle ARM64 to AMD64 translation
     container_name: ddd-hub
     restart: unless-stopped
     environment:
@@ -30,7 +41,7 @@ services:
     # Uncomment the following line to enable the development mode
     command: /usr/bin/caddy run --config /config/caddy/dev.Caddyfile
     healthcheck:
-      test: [ "CMD", "curl", "-f", "https://localhost/healthz" ]
+      test: ['CMD', 'curl', '-f', 'https://localhost/healthz']
       timeout: 5s
       retries: 5
       start_period: 60s

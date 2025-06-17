@@ -20,7 +20,8 @@ WORKDIR /opt/ddd-pwa
 WORKDIR /opt/ddd-pwa
 # for development, we bind mount volumes; comment out for production
 
-COPY ./ .
+#uncomment when not in dev
+# COPY ./ .
 
 ENTRYPOINT ["npm", "run"]
 CMD ["web"]
