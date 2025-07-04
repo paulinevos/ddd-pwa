@@ -57,6 +57,7 @@ function HomeScreen() {
 				<>
 					<Button
 						color={ButtonColor.Pink}
+						fontFamily={theme.typography.fontFamilyPrimary}
 						handlePress={() => getHostToken(setCookie)}
 						text="host game"
 					/>
@@ -81,6 +82,7 @@ function HomeScreen() {
 					)}
 					<Button
 						color={ButtonColor.Blue}
+						fontFamily={theme.typography.fontFamilyPrimary}
 						disabled={code.length !== 4}
 						handlePress={() => getPlayerToken(setCookie)}
 						text="join game"

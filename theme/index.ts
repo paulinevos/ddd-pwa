@@ -10,6 +10,7 @@ const colors = {
 
 	accentYellow: '#FFFACD', // LemonChiffon, a common light yellow
 	accentGreen: '#E5FFE5', // PaleGreen
+    accentBeige: '#ffffef',
 
 	textDark: '#3C3C3C', // A common dark grey for text
 	textMedium: '#555555',
@@ -34,7 +35,7 @@ const typography = {
 	// Font families now map to the keys used in useFonts in app/_layout.tsx
 	fontFamilyPrimary: 'Jua', // A friendly, rounded font for body text and UI
 	fontFamilySecondary: 'EGB', // A more stylistic font for headings or special text (formerly Cardenio)
-	fontFamilyPixel: '04b_30', // A retro pixel font for scores, timers, etc.
+	fontFamilyPixel: 'b40', // A retro pixel font for scores, timers, etc. (must match useFonts key exactly)
 
 	fontSizeXs: 12,
 	fontSizeSm: 14,

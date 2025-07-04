@@ -1,43 +1,60 @@
-import CodeInput from '@/components/CodeInput';
-import { Text, TextProps, TouchableOpacity } from 'react-native';
+import { Text, TouchableOpacity, type DimensionValue } from 'react-native';
 import React from 'react';
-import { fetch } from 'expo/fetch';
-import { useCookies } from 'react-cookie';
 import theme from '@/theme';
 
 enum ButtonColor {
 	Blue = '#DAFFFE',
 	Pink = '#FFDCF7',
+	Cyan = '#69F2FE',
 }
 
 type ButtonProps = {
 	title: string;
 	color: ButtonColor;
+	variant?: 'normal' | 'borderless';
+	fontFamily?: string;
+	fontSize?: number;
+	height?: DimensionValue;
+	width?: DimensionValue;
+    padding?: DimensionValue;
 };
 const Button = ({
 	color,
 	handlePress,
 	text,
 	disabled,
+	variant = 'normal',
+	fontFamily,
+	fontSize = theme.typography.fontSizeLg,
+	height,
+	width,
 }: {
 	color: ButtonColor;
-	handlePress: Function;
+	handlePress: () => void;
 	text: string;
 	disabled?: boolean;
+	variant?: 'normal' | 'borderless';
+	fontFamily?: string;
+	fontSize?: number;
+	height?: DimensionValue;
+	width?: DimensionValue; 
 }) => {
 	return (
 		<TouchableOpacity
 			onPress={handlePress}
 			disabled={disabled || false}
 			style={{
-				width: '80%',
+				width: width,
+				height: height,
 				backgroundColor: color,
 				opacity: disabled ? 0.4 : 1,
-				padding: 15,
-				margin: 20,
-				borderWidth: 1,
-				borderColor: '#000000',
+				borderWidth: variant === 'borderless' ? 0 : 1,
+				borderColor: variant === 'borderless' ? 'transparent' : '#000000',
 				borderRadius: 8,
+				display: 'flex',
+				justifyContent: 'center',
+				alignItems: 'center',   
+		
 				...theme.shadows.medium,
 			}}
 		>
@@ -45,8 +62,9 @@ const Button = ({
 				style={{
 					textTransform: 'uppercase',
 					textAlign: 'center',
-					fontFamily: theme.typography.fontFamilyPrimary,
-					fontSize: theme.typography.fontSizeLg,
+					textAlignVertical: 'center',
+					fontFamily: fontFamily,
+					fontSize: fontSize,
 				}}
 			>
 				{text}

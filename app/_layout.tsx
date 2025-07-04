@@ -6,11 +6,13 @@ import { useEffect } from 'react';
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
 
+
+
 export default function RootLayout() {
 	const [fontsLoaded, fontError] = useFonts({
 		Jua: Jua_400Regular,
 		EGB: require('../assets/fonts/egb.ttf'),
-		'04b_30': require('../assets/fonts/04B_30.ttf'),
+		b40: require('../assets/fonts/04B_30.ttf'),
 		SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
 	});
 
