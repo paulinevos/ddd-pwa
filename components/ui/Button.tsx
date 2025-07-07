@@ -16,7 +16,7 @@ type ButtonProps = {
 	fontSize?: number;
 	height?: DimensionValue;
 	width?: DimensionValue;
-    padding?: DimensionValue;
+	padding?: DimensionValue;
 };
 const Button = ({
 	color,
@@ -28,6 +28,7 @@ const Button = ({
 	fontSize = theme.typography.fontSizeLg,
 	height,
 	width,
+	padding,
 }: {
 	color: ButtonColor;
 	handlePress: () => void;
@@ -37,7 +38,8 @@ const Button = ({
 	fontFamily?: string;
 	fontSize?: number;
 	height?: DimensionValue;
-	width?: DimensionValue; 
+	width?: DimensionValue;
+	padding?: DimensionValue;
 }) => {
 	return (
 		<TouchableOpacity
@@ -53,8 +55,9 @@ const Button = ({
 				borderRadius: 8,
 				display: 'flex',
 				justifyContent: 'center',
-				alignItems: 'center',   
-		
+				alignItems: 'center',
+				padding: padding,
+
 				...theme.shadows.medium,
 			}}
 		>

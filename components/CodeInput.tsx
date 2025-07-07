@@ -7,17 +7,20 @@ const CodeInput = ({ value, setValue }) => {
 		input: {
 			height: 40,
 			margin: 10,
-			padding: 10,
-			width: 'max-content',
-			paddingVertical: 15,
+			// padding: 10,
+			width: '50%',
 			textAlign: 'center',
 			fontWeight: 'bold',
+			fontFamily: theme.typography.fontFamilyPrimary,
+			letterSpacing: 8,
+			fontSize: 26,
 			color: value ? '#000000' : '#999999',
 			textTransform: 'uppercase',
 			backgroundColor: 'rgba(217, 217, 217, 0.5)',
 			borderColor: '#000000',
 			borderWidth: 1,
-			borderStyle: 'dashed',
+			borderRadius: 4,
+			// borderStyle: 'dashed',
 			...theme.shadows.medium,
 		},
 	});
@@ -31,7 +34,8 @@ const CodeInput = ({ value, setValue }) => {
 			autoCapitalize={'characters'}
 			value={value}
 			onChangeText={setValue}
-		></TextInput>
+		>
+        </TextInput>
 	);
 };
 

@@ -1,11 +1,12 @@
 import CodeInput from '@/components/CodeInput';
-import { Image, SafeAreaView, Text } from 'react-native';
+import { Image, SafeAreaView, Text, StyleSheet } from 'react-native';
 import { useState } from 'react';
 import { Button, ButtonColor } from '@/components/ui/Button';
 import Loading from '@/components/ui/Loading';
 import { useCookies } from 'react-cookie';
 import { hostGame, joinGame } from '@/utils/token_server';
-import logo from '../assets/images/ddd_logo_cards.png';
+import logo from '@/assets/images/ddd_logo_cards.png';
+import drankyLg from '@/assets/images/avatars/dranky-lg.png';
 import theme from '@/theme';
 
 function HomeScreen() {
@@ -33,9 +34,22 @@ function HomeScreen() {
 		setError(error.message);
 	};
 
+	const styles = StyleSheet.create({
+		textStyle: {
+			fontFamily: theme.typography.fontFamilyMonospace,
+			fontSize: 40,
+			color: theme.colors.textDark,
+			paddingBottom: 5,
+		},
+		buttonStyle: {
+			paddingTop: 15,
+		},
+	});
+
 	return (
 		<SafeAreaView
 			style={{
+				height: '100%',
 				flex: 1,
 				justifyContent: 'center',
 				alignItems: 'center',
@@ -47,17 +61,31 @@ function HomeScreen() {
 			<Image
 				source={logo}
 				style={{
-					marginTop: -90,
+					marginTop: -100,
 				}}
 				onLoad={() => {
 					setLoading(false);
 				}}
 			/>
+			<Text style={styles.textStyle}>ALPHA</Text>
 			{!loading && (
 				<>
+					<Image
+						source={drankyLg}
+						style={{
+							width: 112,
+							marginBottom: -30,
+							marginTop: 5,
+						}}
+						onLoad={() => {
+							setLoading(false);
+						}}
+					></Image>
 					<Button
 						color={ButtonColor.Pink}
 						fontFamily={theme.typography.fontFamilyPrimary}
+						height={50}
+						width="73%"
 						handlePress={() => getHostToken(setCookie)}
 						text="host game"
 					/>
@@ -65,6 +93,7 @@ function HomeScreen() {
 						style={{
 							fontFamily: theme.typography.fontFamilyPrimary,
 							fontSize: 17,
+							paddingTop: 15,
 						}}
 					>
 						or input room code
@@ -82,6 +111,8 @@ function HomeScreen() {
 					)}
 					<Button
 						color={ButtonColor.Blue}
+						height={50}
+						width="73%"
 						fontFamily={theme.typography.fontFamilyPrimary}
 						disabled={code.length !== 4}
 						handlePress={() => getPlayerToken(setCookie)}

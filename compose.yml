@@ -7,7 +7,7 @@ services:
         - NODE_ENV=development
     environment:
       - NODE_ENV=development
-      - REACT_NATIVE_PACKAGER_HOSTNAME=192.168.178.31
+    #   - REACT_NATIVE_PACKAGER_HOSTNAME=192.168.178.31
     #   - EXPO_PUBLIC_TOKEN_SERVER_PROTOCOL=http
     #   - EXPO_PUBLIC_TOKEN_SERVER_HOST=tokens
     #   - EXPO_PUBLIC_TOKEN_SERVER_PORT=3000
@@ -21,7 +21,11 @@ services:
     container_name: ddd-server
     image: synon/ddd_game_server:d1bbd6e
     platform: linux/amd64 # Specify platform to handle ARM64 to AMD64 translation
-    # Build with socat for port forwarding since server only listens on 127.0.0.1
+    # Build with socat for port forwarding since server only listens on 127.0.0.1 (cookie issues without?!)
+    entrypoint: >
+      sh -c "apt-get update && apt-get install -y socat && 
+      (socat TCP-LISTEN:3000,fork,reuseaddr TCP:127.0.0.1:3000 &) && 
+      ndd/ /aep/.jdex"j
     ports:
       - '3000:3000'
   hub:

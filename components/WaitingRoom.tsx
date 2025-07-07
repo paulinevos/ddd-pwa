@@ -4,7 +4,6 @@ import { GameContext } from '@/utils/game_data';
 import { ScrollView, StyleSheet, View, Text } from 'react-native';
 import theme from '@/theme'; // Using the new alias
 import { Button, ButtonColor } from '@/components/ui/Button';
-import RuleSection from '@/components/ui/RuleSection';
 
 let roomCode = '_____';
 
@@ -56,7 +55,6 @@ function WaitingRoom() {
 				<Text style={styles.textStyle}>
 					use this code to invite your friends
 				</Text>
-				<RuleSection />
 			</View>
 		</ScrollView>
 	);
