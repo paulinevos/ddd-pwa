@@ -23,7 +23,7 @@ function WaitingRoom() {
 			flexDirection: 'column',
 			alignItems: 'center',
 			justifyContent: 'center',
-			marginTop: '100%',
+			marginTop: '80%',
 		},
 		textStyle: {
 			fontFamily: theme.typography.fontFamilyPrimary,

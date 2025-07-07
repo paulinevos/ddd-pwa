@@ -4,9 +4,11 @@
 // Based on your Figma: Pinks, Light Blues, Yellows, Greens, Dark Text
 const colors = {
 	primaryPink: '#FFC0CB', // Example: Standard Pink, adjust to your specific pink
-	primaryLightPink: '#FFE0F8', // A lighter shade of pink often seen
+	primaryLightPink: '#FFE0F8',
+    primaryRed: '#E9636E', 
 	secondaryBlue: '#ADD8E6', // Example: Light Blue
-	secondaryLightBlue: '#D6F0FA', // A lighter shade for backgrounds etc.
+	secondaryLightBlue: '#D6F0FA',
+     // A lighter shade for backgrounds etc.
 
 	accentYellow: '#FFFACD', // LemonChiffon, a common light yellow
 	accentGreen: '#E5FFE5', // PaleGreen
