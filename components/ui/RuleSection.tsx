@@ -63,7 +63,16 @@ export default function RuleSection() {
 							}}
 						></Image>
 					</View>
-					<View style={styles.box} />
+					<View style={styles.box}>
+						<Image
+							source={ruleImage}
+							style={styles.image}
+							resizeMode="center"
+							onLoad={() => {
+								// setLoading(false);
+							}}
+						></Image>
+					</View>
 				</View>
 			</View>
 		</View>
