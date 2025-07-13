@@ -20,6 +20,7 @@
     "@expo/vector-icons": "^14.0.2",
     "@react-navigation/bottom-tabs": "^7.0.0",
     "@react-navigation/native": "^7.0.0",
+    "@tanstack/react-query": "^5.83.0",
     "@types/eventsource": "^1.1.15",
     "ajv": "^8.0.0",
     "eventsource": "^3.0.1",

@@ -1,24 +1,27 @@
 import HomeScreen from "@/components/HomeScreen";
 import {useCookies} from "react-cookie";
 import GameView from "@/components/GameView";
-import {useState} from "react";
-import AvatarSelectionScreen from "@/components/AvatarSelectionScreen";
-import WaitingRoom from "@/components/WaitingRoom";
+// These imports are unused and can be removed
+// import AvatarSelectionScreen from "@/components/AvatarSelectionScreen";
+// import WaitingRoom from "@/components/WaitingRoom";
 
 
 function Index() {
     const [ cookies ] = useCookies(['mercureAuthorization'])
 
-    // ToDo: use effect to update game state when deps update
-    // Wrap these in GameStateProvider
-
-
-
+    // The GameView component already includes the GameStateMachineProvider
+    // but we can also wrap the entire app for consistent state management
+    
     if (cookies.mercureAuthorization) {
+        // GameView has its own GameStateMachineProvider internally
         return <GameView />
     }
 
-    return <HomeScreen />
+    return (
+        // We can also wrap HomeScreen in the GameStateMachineProvider
+        // for consistent state management throughout the app
+        <HomeScreen />
+    )
 }
 
 export default Index

@@ -2,7 +2,51 @@ import { StyleSheet, TouchableOpacity, Text, Image, View } from 'react-native';
 import React from 'react';
 import theme from '@/theme'; // Using the new alias
 
-function PlayerBar({ player }) {
+// Helper function to get avatar image based on avatar name
+const getAvatarImage = (avatarName: string) => {
+	console.log('[PlayerBar] Loading avatar:', avatarName);
+	// Default to cocky avatar as fallback
+	let avatarImage = require('@/assets/images/avatars/cocky.png');
+	
+	// Map avatar names to their image paths
+	try {
+		switch(avatarName) {
+			case 'angry':
+				avatarImage = require('@/assets/images/avatars/angry.png');
+				break;
+			case 'cocky':
+				avatarImage = require('@/assets/images/avatars/cocky.png');
+				break;
+			case 'default':
+				avatarImage = require('@/assets/images/avatars/cocky.png');
+				break;
+			case 'happy':
+				avatarImage = require('@/assets/images/avatars/happy.png');
+				break;
+			case 'sad':
+				avatarImage = require('@/assets/images/avatars/sad.png');
+				break;
+			default:
+				console.log('[PlayerBar] Unknown avatar name:', avatarName);
+				// Keep default avatarImage
+		}
+	} catch (error) {
+		console.error('[PlayerBar] Error loading avatar image:', error);
+	}
+	
+	return avatarImage;
+};
+
+// Define Player interface to match structure in game_data.ts
+interface PlayerProps {
+	player: {
+		id: string;
+		displayName: string;
+		avatar: string;
+	}
+}
+
+function PlayerBar({ player }: PlayerProps) {
 	console.debug('PLAYER', player);
 	const styles = StyleSheet.create({
 		container: {
@@ -48,9 +92,9 @@ function PlayerBar({ player }) {
 			<Text style={styles.text}>{player.displayName}</Text>
 			<View style={styles.avatarContainer}>
 				<Image
-					source={require('@/assets/images/avatars/cocky.png')}
+					source={getAvatarImage(player.avatar)}
 					style={styles.avatar}
-					resizeMode="contain" // Or "cover", depending on desired look
+					resizeMode="contain"
 				/>
 			</View>
 		</TouchableOpacity>

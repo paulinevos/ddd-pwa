@@ -43,21 +43,32 @@ class OutgoingMessage {
 }
 
 const send = async (token: string, message: Message) => {
+    console.log('[MessageHandling] Sending message:', message);
     const outgoing = createOutGoing(token, message)
     const url = new URL(hubUrl)
+    console.log('[MessageHandling] Posting to URL:', url.toString());
 
     const data = new URLSearchParams();
     data.append('topic', outgoing.topic);
     data.append('data', JSON.stringify(outgoing.payload));
-
-    await fetch(url.toString(), {
-        headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': "application/x-www-form-urlencoded"
-        },
-        method: 'POST',
-        body: data,
-    })
+    
+    try {
+        const response = await fetch(url.toString(), {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': "application/x-www-form-urlencoded"
+            },
+            method: 'POST',
+            body: data,
+        })
+        
+        console.log('[MessageHandling] Message sent, response status:', response.status);
+        if (!response.ok) {
+            console.error('[MessageHandling] Error sending message:', await response.text());
+        }
+    } catch (error) {
+        console.error('[MessageHandling] Failed to send message:', error);
+    }
 }
 
 class TokenPayload {
@@ -76,15 +87,29 @@ class TokenPayload {
     }
 }
 const parseToken = (token: string): TokenPayload => {
+    console.log('[MessageHandling] Parsing token...');
     const encoded = token.split('.')[1] || ''
     if (!encoded) {
+        console.error('[MessageHandling] JWT format is invalid');
         throw new Error('JWT format is invalid')
     }
 
-    const { mercure } = JSON.parse(atob(encoded))
-    const { payload } = mercure
-    const {user_id, role, code} = payload
-    return new TokenPayload(user_id, role, code)
+    try {
+        const decoded = JSON.parse(atob(encoded));
+        const { mercure } = decoded;
+        const { payload } = mercure;
+        const {user_id, role, code} = payload;
+        console.log('[MessageHandling] Token parsed successfully:', {
+            userId: user_id,
+            role,
+            code,
+            isHost: role === 'Host'
+        });
+        return new TokenPayload(user_id, role, code);
+    } catch (error) {
+        console.error('[MessageHandling] Error parsing token:', error);
+        throw error;
+    }
 }
 
 
