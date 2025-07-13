@@ -44,6 +44,9 @@ export interface GameStateMachineState {
   
   // Force state method to handle invalid transitions
   forceState: (newState: GameFlowState) => void;
+
+  // Callback to notify listeners of any state change
+  onStateChange: (state: GameStateMachineState) => void;
 }
 
 // Valid state transitions
@@ -57,7 +60,10 @@ const validTransitions: Record<GameFlowState, GameFlowState[]> = {
 };
 
 // Initial state
-export const initialGameState: Omit<GameStateMachineState, 'transition' | 'forceState'> = {
+export const initialGameState: Omit<
+	GameStateMachineState,
+	'transition' | 'forceState' | 'onStateChange'
+> = {
   flowState: GameFlowState.HOME,
   userRole: UserRole.NONE,
   code: null,
@@ -70,7 +76,10 @@ export const initialGameState: Omit<GameStateMachineState, 'transition' | 'force
 
 // Create a state machine instance
 export const createStateMachine = (
-  initialState: Omit<GameStateMachineState, 'transition' | 'forceState'> = initialGameState,
+  initialState: Omit<
+		GameStateMachineState,
+		'transition' | 'forceState' | 'onStateChange'
+	> = initialGameState,
   onStateChange: (state: GameStateMachineState) => void = () => {}
 ): GameStateMachineState => {
   let currentState: GameStateMachineState = {
@@ -93,10 +102,24 @@ export const createStateMachine = (
       console.log(`[StateMachine] Force state: ${currentState.flowState} -> ${newState}`);
       currentState.flowState = newState;
       onStateChange(currentState);
-    }
+    },
+    onStateChange: onStateChange,
   };
   
   return currentState;
+};
+
+// Add a player to the game state
+export const addPlayer = (
+  machine: GameStateMachineState,
+  player: Player,
+  onStateChange: (state: GameStateMachineState) => void
+) => {
+  const playerExists = machine.players.some((p) => p.id === player.id);
+  if (!playerExists) {
+    machine.players = [...machine.players, player];
+    onStateChange(machine);
+  }
 };
 
 // Helper functions for common state changes

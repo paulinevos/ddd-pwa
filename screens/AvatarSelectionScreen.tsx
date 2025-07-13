@@ -8,16 +8,17 @@ import { useGameStateMachine } from "@/contexts/GameStateMachineContext";
 import { useGameContext } from "@/contexts/GameContext";
 import { selectAvatar } from "@/utils/GameStateMachine";
 
-const avatars = [
-    require(`../assets/images/avatars/cocky.png`),
-    require(`../assets/images/avatars/dranky.png`),
-    require(`../assets/images/avatars/winey.png`),
-    require(`../assets/images/avatars/guinney.png`),
-    require(`../assets/images/avatars/pinty.png`),
-    require(`../assets/images/avatars/martiny.png`),
-    require(`../assets/images/avatars/the_d.png`),
-    require(`../assets/images/avatars/coconutty.png`),
-]
+const avatarImages = {
+    'cocky.png': require(`../assets/images/avatars/cocky.png`),
+    'dranky.png': require(`../assets/images/avatars/dranky.png`),
+    'winey.png': require(`../assets/images/avatars/winey.png`),
+    'guinney.png': require(`../assets/images/avatars/guinney.png`),
+    'pinty.png': require(`../assets/images/avatars/pinty.png`),
+    'martiny.png': require(`../assets/images/avatars/martiny.png`),
+    'the_d.png': require(`../assets/images/avatars/the_d.png`),
+    'coconutty.png': require(`../assets/images/avatars/coconutty.png`),
+};
+const avatars = Object.keys(avatarImages);
 
 const AvatarSelectionScreen = () => {
     const [ cookies ] = useCookies(['mercureAuthorization']);
@@ -53,13 +54,13 @@ const AvatarSelectionScreen = () => {
                 await send(token, new Message(MessageType.PlayerJoined, {
                     id: parsed.userId,
                     displayName,
-                    avatar: selected
+                    avatar: avatars[selected as number]
                 }));
                 console.log('[AvatarSelection] Player joined message sent');
                 
                 // Update state machine to transition to waiting room
                                 // Update the in-memory state machine
-                selectAvatar(stateMachine, parsed.userId, displayName, String(avatars[selected as number]));
+                selectAvatar(stateMachine, parsed.userId, displayName, avatars[selected as number]);
 
                 // Now, trigger the state update in the context, which will persist it
                 setGameState({
@@ -135,11 +136,11 @@ const AvatarSelectionScreen = () => {
                 style={styles.scrollView}
             >
                 {
-                    avatars.map((avatar, index) => {
+                    avatars.map((avatarName, index) => {
                         return (
                           <div key={index}>
                             <AvatarButton
-                              image={avatar}
+                              image={avatarImages[avatarName as keyof typeof avatarImages]}
                               selected={index === selected}
                               handlePress={() => setSelected(index)}
                             />

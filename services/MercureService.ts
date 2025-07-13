@@ -4,6 +4,7 @@ import { Message, MessageType } from '@/utils/messages';
 
 const KeyLastEventId = 'ddd_lastEventId';
 const hubUrl = `${process.env.EXPO_PUBLIC_MERCURE_HUB}/.well-known/mercure`;
+const topicBaseUrl = process.env.EXPO_PUBLIC_MERCURE_TOPIC_URL;
 
 class TokenPayload {
     userId: string;
@@ -53,8 +54,7 @@ export const connect = (token: string): EventSource => {
 
 
     const url = new URL(hubUrl);
-    const base = 'https://localhost/.well-known/mercure/';
-    const topic = `${base}${payload.code}`;
+    const topic = `${topicBaseUrl}${payload.code}`;
 
     url.searchParams.append('topic', topic);
     url.searchParams.append('topic', `${topic}/${payload.userId}`);
@@ -67,11 +67,14 @@ export const connect = (token: string): EventSource => {
 };
 
 export const activeSubscriptions = (token: string): EventSource => {
-    const url = new URL(`${hubUrl}`);
-    url.searchParams.append('topic', '/.well-known/mercure/subscriptions{/topic}{/subscriber}');
+    const url = new URL(hubUrl);
+    // The topic for subscriptions is a special, reserved topic.
+    // We construct it relative to the base hub URL.
+    const subscriptionsTopic = new URL('/.well-known/mercure/subscriptions', hubUrl).toString();
+    url.searchParams.append('topic', subscriptionsTopic);
 
-    console.debug('Listening to active subscriptions');
-    return new EventSource(url);
+    console.debug('Listening to active subscriptions on:', url.toString());
+    return new EventSource(url.toString(), { withCredentials: true });
 };
 
 class OutgoingMessage {
@@ -97,7 +100,7 @@ const createOutGoing = (token: string, message: Message): OutgoingMessage => {
     const payload = parseToken(token);
 
     return new OutgoingMessage(
-        topicForMessageType(`https://localhost/.well-known/mercure/${payload.code}`, message.type),
+        topicForMessageType(`${topicBaseUrl}${payload.code}`, message.type),
         message
     );
 };

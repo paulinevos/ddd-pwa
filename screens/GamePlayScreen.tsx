@@ -1,29 +1,40 @@
+import React from 'react';
 import PlayerBar from '@/components/PlayerBar';
 
 import { Player } from '@/lib/types';
-import { ScrollView, StyleSheet, View, Text } from 'react-native';
+import {
+	ScrollView,
+	StyleSheet,
+	View,
+	Text,
+} from 'react-native';
 import theme from '@/theme';
 import { Button, ButtonColor } from '@/components/Button';
 import { useGameStateMachine } from '@/contexts/GameStateMachineContext';
+import { GameFlowState } from '@/utils/GameStateMachine';
 import { parseToken } from '@/services/MercureService';
 
-function WaitingRoom() {
+function GamePlayScreen() {
+	const { flowState } = useGameStateMachine();
 	const stateMachine = useGameStateMachine();
+	const { transition } = stateMachine;
 	const { players, code, hostId } = stateMachine;
-	
+
 	// Log state information for debugging without changing UI
 	console.log('[WaitingRoom] Rendering with state from StateMachine:', {
 		code: code,
 		playerCount: players?.length,
 		flowState: stateMachine.flowState,
 		playersInState: stateMachine.players,
-		hostIdInState: stateMachine.hostId
+		hostIdInState: stateMachine.hostId,
 	});
-	
+
 	// Log token data if available
 	if (typeof window !== 'undefined') {
 		const cookies = document.cookie.split('; ');
-		const authCookie = cookies.find(cookie => cookie.startsWith('mercureAuthorization='));
+		const authCookie = cookies.find((cookie) =>
+			cookie.startsWith('mercureAuthorization=')
+		);
 		if (authCookie) {
 			const token = authCookie.split('=')[1];
 			try {
@@ -31,7 +42,7 @@ function WaitingRoom() {
 				console.log('[WaitingRoom] Token data:', {
 					userId: parsed.userId,
 					isHost: parsed.isHost(),
-					code: parsed.code
+					code: parsed.code,
 				});
 			} catch (error) {
 				console.error('[WaitingRoom] Error parsing token:', error);
@@ -67,13 +78,15 @@ function WaitingRoom() {
 
 		// If the host is not in the players list yet, add a placeholder.
 		// This ensures the host card is always visible, even before their data has fully propagated.
-		if (hostId && !displayPlayers.some(p => p.id === hostId)) {
+		if (hostId && !displayPlayers.some((p) => p.id === hostId)) {
 			const hostPlaceholder: Player = {
 				id: hostId,
 				displayName: 'Game Host',
-				avatar: 'default' // Use a default avatar
+				avatar: 'default', // Use a default avatar
 			};
-			console.log('[WaitingRoom] Host not found in player list. Injecting placeholder.');
+			console.log(
+				'[WaitingRoom] Host not found in player list. Injecting placeholder.'
+			);
 			displayPlayers.unshift(hostPlaceholder);
 		}
 
@@ -90,24 +103,35 @@ function WaitingRoom() {
 			))}
 
 			<View style={styles.buttonContainer}>
-				<Button
-					color={ButtonColor.Cyan}
-					handlePress={() => console.log('cyan button pressed')}
-					text="play now!"
-					variant="borderless"
-					fontFamily={theme.typography.fontFamilyPixel}
-					fontSize={27}
-					width={224}
-					height={37}
-				/>
-				<Text style={styles.textStyle}>Room code :</Text>
-				<Text style={styles.textStyle}>{code}</Text>
-				<Text style={styles.textStyle}>
-					use this code to invite your friends
-				</Text>
+				{flowState === GameFlowState.WAITING_ROOM && (
+					<>
+						<Button
+							color={ButtonColor.Cyan}
+							handlePress={() => transition(GameFlowState.IN_GAME)}
+							text="play now!"
+							variant="borderless"
+							fontFamily={theme.typography.fontFamilyPixel}
+							fontSize={27}
+							width={224}
+							height={37}
+						/>
+						<Text style={styles.textStyle}>Room code :</Text>
+						<Text style={styles.textStyle}>{code}</Text>
+						<Text style={styles.textStyle}>
+							use this code to invite your friends
+						</Text>
+					</>
+				)}
+
+				{flowState === GameFlowState.IN_GAME && (
+					<View>
+						{/* Placeholder for the in-game action button */}
+						{/* <Text style={styles.textStyle}>Game Action Area</Text> */}
+					</View>
+				)}
 			</View>
 		</ScrollView>
 	);
 }
 
-export default WaitingRoom;
+export default GamePlayScreen;

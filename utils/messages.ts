@@ -1,8 +1,8 @@
 enum MessageType {
-    PlayerJoined,
-    InitiateGameState,
-    GameStarted,
-    GameEnded,
+    PlayerJoined = 'PlayerJoined',
+    InitiateGameState = 'InitiateGameState',
+    GameStarted = 'GameStarted',
+    GameEnded = 'GameEnded',
 }
 
 class Message {
