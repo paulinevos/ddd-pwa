@@ -1,10 +1,11 @@
 import React, {Fragment, useEffect, useState} from "react";
 import {ScrollView, StyleSheet, Text, TextInput, TouchableOpacity} from "react-native";
 import {AvatarButton} from "@/components/ui/AvatarButton";
-import {parseToken, send} from "@/utils/message_handling";
+import {parseToken, send} from "@/services/MercureService";
 import {useCookies} from "react-cookie";
 import {Message, MessageType} from "@/utils/messages";
 import { useGameStateMachine } from "@/contexts/GameStateMachineContext";
+import { useGameContext } from "@/context/GameContext";
 import { selectAvatar } from "@/utils/GameStateMachine";
 
 const avatars = [
@@ -21,13 +22,14 @@ const avatars = [
 const AvatarSelectionScreen = () => {
     const [ cookies ] = useCookies(['mercureAuthorization']);
     const stateMachine = useGameStateMachine();
+    const { setGameState } = useGameContext();
 
     const [displayName, setDisplayName] = useState("")
-    const [selected, setSelected] = useState<string>("");
+    const [selected, setSelected] = useState<number | null>(null);
     const [submitted, setSubmitted] = useState(false)
     const token = cookies.mercureAuthorization
 
-    const buttonEnabled = displayName.length > 2 && selected
+    const buttonEnabled = displayName.length > 2 && selected !== null
 
     useEffect(() => {
         async function handleSubmit() {
@@ -35,7 +37,7 @@ const AvatarSelectionScreen = () => {
             console.log('[AvatarSelection] Submitting avatar with:', {
                 userId: parsed.userId,
                 displayName,
-                avatar: selected,
+                avatar: avatars[selected as number],
                 isHost: parsed.isHost()
             });
 
@@ -56,7 +58,7 @@ const AvatarSelectionScreen = () => {
                 console.log('[AvatarSelection] Player joined message sent');
                 
                 // Update state machine to transition to waiting room
-                selectAvatar(stateMachine, parsed.userId, displayName, selected);
+                selectAvatar(stateMachine, setGameState, parsed.userId, displayName, String(avatars[selected as number]));
                 
                 // Log state after successful submission
                 console.log('[AvatarSelection] State after submit:', {
@@ -80,7 +82,7 @@ const AvatarSelectionScreen = () => {
                     console.error('[AvatarSelection] Error submitting avatar:', error);
                 });
         }
-    }, [submitted, stateMachine])
+    }, [submitted, stateMachine, displayName, selected, token, setGameState])
 
     const styles = StyleSheet.create({
         inputStyle: {
@@ -90,7 +92,7 @@ const AvatarSelectionScreen = () => {
             padding: 40,
             textAlign: "center",
             fontWeight: "bold",
-            fontSize: "1.1em",
+            fontSize: 18,
             width: "150%",
             borderTopColor: "#000000",
             borderBottomColor: "#000000",
@@ -131,8 +133,8 @@ const AvatarSelectionScreen = () => {
                           <div key={index}>
                             <AvatarButton
                               image={avatar}
-                              selected={String(avatar) === selected}
-                              handlePress={ () => setSelected(String(avatar)) }
+                              selected={index === selected}
+                              handlePress={() => setSelected(index)}
                             />
                           </div>
                         )

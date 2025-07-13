@@ -1,4 +1,4 @@
-import { Player } from './game_data';
+import { GameState, Player } from '@/lib/types';
 
 // Game flow states as defined in steps.md
 export enum GameFlowState {
@@ -26,7 +26,7 @@ export interface GameStateMachineState {
   userRole: UserRole;
   
   // Game details
-  gameCode: string | null;
+  code: string | null;
   cardPack: string | null;
   
   // Player details
@@ -60,7 +60,7 @@ const validTransitions: Record<GameFlowState, GameFlowState[]> = {
 export const initialGameState: Omit<GameStateMachineState, 'transition' | 'forceState'> = {
   flowState: GameFlowState.HOME,
   userRole: UserRole.NONE,
-  gameCode: null,
+  code: null,
   cardPack: null,
   players: [],
   currentPlayerTurn: null,
@@ -103,7 +103,7 @@ export const createStateMachine = (
 export const transitionToHome = (machine: GameStateMachineState) => {
   machine.forceState(GameFlowState.HOME);
   machine.userRole = UserRole.NONE;
-  machine.gameCode = null;
+  machine.code = null;
   machine.cardPack = null;
   machine.players = [];
   machine.currentPlayerTurn = null;
@@ -117,12 +117,13 @@ export const startHostFlow = (machine: GameStateMachineState) => {
 
 export const joinGameAsPlayer = (machine: GameStateMachineState, gameCode: string) => {
   machine.userRole = UserRole.PLAYER;
-  machine.gameCode = gameCode;
+  machine.code = gameCode;
   machine.transition(GameFlowState.SELECTING_AVATAR);
 };
 
 export const selectAvatar = (
   machine: GameStateMachineState, 
+  setGameState: (state: GameState) => void,
   playerId: string, 
   displayName: string, 
   avatar: string
@@ -180,6 +181,13 @@ export const selectAvatar = (
   // Use forceState to avoid invalid transition errors
   // This ensures we always reach waiting room regardless of current state
   machine.forceState(GameFlowState.WAITING_ROOM);
+
+  // Persist the new state to localStorage
+  const newGameState: GameState = {
+    players: machine.players,
+    hostId: machine.hostId,
+  };
+  setGameState(newGameState);
   
   console.log('[GameStateMachine] Transitioned to:', machine.flowState);
 };

@@ -1,12 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { SafeAreaView, Text } from 'react-native';
 import { EventSource } from 'eventsource';
-import { connect, activeSubscriptions, parseToken } from "@/utils/message_handling";
+import { connect, activeSubscriptions, parseToken } from '@/services/MercureService';
 import { MessageType } from "@/utils/messages";
-import WaitingRoom from "@/components/WaitingRoom";
+import WaitingRoom from "@/screens/WaitingRoom";
 import { useCookies } from "react-cookie";
-import { commitState, Player, Status, GameState, useGameContext } from "@/utils/game_data";
-import AvatarSelectionScreen from '@/components/AvatarSelectionScreen';
+import { Player } from '@/lib/types';
+import { useGameContext } from "@/context/GameContext";
+import AvatarSelectionScreen from "@/screens/AvatarSelectionScreen";
 import RuleSection from '@/components/ui/RuleSection';
 import { GameStateMachineProvider, useGameStateMachine } from "@/contexts/GameStateMachineContext";
 import { GameFlowState } from "@/utils/GameStateMachine";
@@ -23,16 +24,17 @@ function GameViewWithProvider() {
 // Inner GameView content that uses the state machine
 function GameViewContent() {
 	const [cookies] = useCookies(['mercureAuthorization']);
-	const { gameState, setGameState } = useGameContext();
-	const [players, setPlayers] = useState(gameState?.players || []);
+	const { gameState } = useGameContext();
 	const stateMachine = useGameStateMachine();
+
+	
 
 	console.log('[GameView] Initial render with:', {
 		cookie: cookies.mercureAuthorization ? 'Present' : 'Not present',
 		gameStateExists: !!gameState,
 		gameStatePlayers: gameState?.players?.length || 0,
-		playersLength: players.length,
-		playerIds: players.map(p => p.id),
+		playersLength: stateMachine.players.length,
+		playerIds: stateMachine.players.map((p: Player) => p.id),
 		stateMachineState: stateMachine.flowState,
 		stateMachinePlayers: stateMachine.players?.length || 0,
 		stateMachineHostId: stateMachine.hostId || 'none'
@@ -53,37 +55,7 @@ function GameViewContent() {
 	}
 
 	// Initialize or update game state when needed
-	useEffect(() => {
-		// Initialize gameState if we have auth token but no gameState
-		if (!gameState && cookies.mercureAuthorization) {
-			const token = cookies.mercureAuthorization;
-			const parsed = parseToken(token);
-			console.log('[GameView] Initializing game state with token data:', parsed);
-			
-			// Create initial game state from token
-			const initialState: GameState = {
-				hostId: parsed.userId,
-				code: parsed.code,
-				// Initialize with current players or empty array
-				players: players,
-				lastEventId: null,
-				status: Status.Waiting 
-			};
-			setGameState(initialState);
-			commitState(initialState);
-		}
-	}, [gameState, cookies.mercureAuthorization, players, setGameState]);
-
-	// Update gameState when players change
-	useEffect(() => {
-		// Only update if we have players and gameState already exists
-		if (players.length > 0 && gameState) {
-			console.log('[GameView] Updating gameState with players:', players);
-			const newState = { ...gameState, players };
-			setGameState(newState);
-			commitState(newState);
-		}
-	}, [players, gameState, setGameState]);
+	
 
 	// Connect to event source for real-time updates
 	useEffect(() => {
@@ -128,22 +100,18 @@ function GameViewContent() {
 					console.log('[GameView] State before adding player:', {
 						stateMachineState: stateMachine.flowState,
 						stateMachinePlayers: stateMachine.players?.map(p => ({ id: p.id, name: p.displayName })),
-						currentPlayers: players.map(p => ({ id: p.id, name: p.displayName })),
+						currentPlayers: stateMachine.players.map((p: Player) => ({ id: p.id, name: p.displayName })),
 						newPlayer: payload
 					});
 					
-					// Add player to state
-					setPlayers(currentPlayers => {
-						// Check if player already exists
-						const playerExists = currentPlayers.some(p => p.id === (payload as Player).id);
-						if (playerExists) {
-							console.log('[GameView] Player already exists, not adding:', payload);
-							return currentPlayers;
-						}
-						
-						console.log('[GameView] Adding new player:', payload);
-						return [...currentPlayers, payload as Player];
-					});
+					// Add player to state machine
+					const playerExists = stateMachine.players.some((p: Player) => p.id === (payload as Player).id);
+					if (!playerExists) {
+						console.log('[GameView] Adding new player to state machine:', payload);
+						stateMachine.players.push(payload as Player);
+					} else {
+						console.log('[GameView] Player already exists in state machine, not adding:', payload);
+					}
 					break;
 				default:
 					console.log('[GameView] Unhandled message type:', type);
@@ -155,7 +123,7 @@ function GameViewContent() {
 			console.log('[GameView] Cleanup event source');
 			events.close();
 		};
-	}, [cookies.mercureAuthorization, players, stateMachine.flowState, stateMachine.players]);
+	}, [cookies.mercureAuthorization, stateMachine]);
 
 	return (
 		<SafeAreaView
@@ -169,33 +137,37 @@ function GameViewContent() {
 		>
 
 
-			{/* Log component rendering state */}
-			{console.log('[GameView] Rendering components based on state:', {
-				flowState: stateMachine.flowState,
-				showingAvatar: stateMachine.flowState === GameFlowState.SELECTING_AVATAR,
-				showingWaitingRoom: stateMachine.flowState === GameFlowState.WAITING_ROOM,
-				currentPlayers: players.length
-			})}
-			
-			{/* Show components based on game state machine */}
-			{stateMachine.flowState === GameFlowState.SELECTING_AVATAR && (
-				<AvatarSelectionScreen />
-			)}
-			
-			{stateMachine.flowState === GameFlowState.WAITING_ROOM && (
+			{stateMachine && (
 				<>
-					<WaitingRoom />
-					<RuleSection />
-				</>
-			)}
-			
-			{/* Add additional game states as needed */}
-			{stateMachine.flowState === GameFlowState.IN_GAME && (
-				<Text>Game in progress</Text>
-			)}
+					{/* Log component rendering state */}
+					{console.log('[GameView] Rendering components based on state:', {
+						flowState: stateMachine.flowState,
+						showingAvatar: stateMachine.flowState === GameFlowState.SELECTING_AVATAR,
+						showingWaitingRoom: stateMachine.flowState === GameFlowState.WAITING_ROOM,
+						currentPlayers: stateMachine.players.length
+					})}
+					
+					{/* Show components based on game state machine */}
+					{stateMachine.flowState === GameFlowState.SELECTING_AVATAR && (
+						<AvatarSelectionScreen />
+					)}
+					
+					{stateMachine.flowState === GameFlowState.WAITING_ROOM && (
+						<>
+							<WaitingRoom />
+							<RuleSection />
+						</>
+					)}
+					
+					{/* Add additional game states as needed */}
+					{stateMachine.flowState === GameFlowState.IN_GAME && (
+						<Text>Game in progress</Text>
+					)}
 
-			{stateMachine.flowState === GameFlowState.GAME_OVER && (
-				<Text>Game over</Text>
+					{stateMachine.flowState === GameFlowState.GAME_OVER && (
+						<Text>Game over</Text>
+					)}
+				</>
 			)}
 		</SafeAreaView>
 	);

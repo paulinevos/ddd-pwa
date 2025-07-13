@@ -7,8 +7,9 @@ import {
   UserRole
 } from '../utils/GameStateMachine';
 import { useCookies } from 'react-cookie';
-import { parseToken } from '@/utils/message_handling';
-import { useGameContext } from '@/utils/game_data';
+import { parseToken } from '@/services/MercureService';
+import { useGameContext } from '@/context/GameContext';
+import { Player } from '@/lib/types';
 
 // Create the context
 export const GameStateMachineContext = createContext<GameStateMachineState | null>(null);
@@ -44,7 +45,9 @@ export const GameStateMachineProvider: React.FC<GameStateMachineProviderProps> =
     setStateMachine(machine);
 
     // If we have a cookie, try to restore the state
-    if (cookies.mercureAuthorization) {
+    console.log('[GameStateMachineContext] Initializing state machine. Cookie:', cookies.mercureAuthorization, 'GameState:', gameState);
+
+		if (cookies.mercureAuthorization) {
       const token = cookies.mercureAuthorization;
       const parsed = parseToken(token);
 
@@ -57,7 +60,7 @@ export const GameStateMachineProvider: React.FC<GameStateMachineProviderProps> =
       });
       
       // Set game code regardless of state
-      machine.gameCode = parsed.code;
+      machine.code = parsed.code;
       
       // Set user role based on token
       if (parsed.isHost()) {
@@ -72,29 +75,38 @@ export const GameStateMachineProvider: React.FC<GameStateMachineProviderProps> =
         machine.hostId = gameState.hostId || parsed.userId;
         
         // Ensure we have at least an empty players array
-        const existingPlayers = gameState.players || [];
+        const existingPlayers: Player[] = gameState.players || [];
         machine.players = [...existingPlayers];
         
         // Check if the current user has an avatar by looking for their ID in players
-        const currentUserHasAvatar = existingPlayers.some(p => p.id === parsed.userId);
+        const currentUserHasAvatar = existingPlayers.some((p: Player) => p.id === parsed.userId);
+
+				console.log('[GameStateMachineContext] Avatar check:', {
+					userIdFromToken: parsed.userId,
+					playersFromGameState: existingPlayers.map(p => p.id),
+					userHasAvatar: currentUserHasAvatar
+				});
         
         console.log('[GameStateMachineContext] Current user avatar check:', {
           currentUserId: parsed.userId,
           hasAvatar: currentUserHasAvatar,
-          matchingPlayers: existingPlayers.filter(p => p.id === parsed.userId)
+          matchingPlayers: existingPlayers.filter((p: Player) => p.id === parsed.userId)
         });
         
         if (currentUserHasAvatar) {
           // User has already selected an avatar, show waiting room
-          machine.forceState(GameFlowState.WAITING_ROOM);
+          console.log('[GameStateMachineContext] User has avatar, forcing state to WAITING_ROOM.');
+					machine.forceState(GameFlowState.WAITING_ROOM);
         } else {
           // User hasn't selected an avatar yet
+          
           machine.forceState(GameFlowState.SELECTING_AVATAR);
         }
       }
       // If we have token but no game state, we're selecting avatar
       else {
         // Initialize empty players array
+        
         machine.players = [];
         machine.forceState(GameFlowState.SELECTING_AVATAR);
       }

@@ -8,7 +8,7 @@ import { hostGame, joinGame } from '@/utils/token_server';
 import logo from '@/assets/images/ddd_logo_cards.png';
 import drankyLg from '@/assets/images/avatars/dranky-lg.png';
 import theme from '@/theme';
-import { destroyState } from '@/utils/game_data';
+import { destroyState } from '@/context/GameContext';
 
 function HomeScreen() {
 	const [loading, setLoading] = useState(true);

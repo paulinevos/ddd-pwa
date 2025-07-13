@@ -1,29 +1,23 @@
 import PlayerBar from '@/components/PlayerBar';
-import { useContext } from 'react';
-import { GameContext, Player } from '@/utils/game_data';
+
+import { Player } from '@/lib/types';
 import { ScrollView, StyleSheet, View, Text } from 'react-native';
 import theme from '@/theme';
 import { Button, ButtonColor } from '@/components/ui/Button';
 import { useGameStateMachine } from '@/contexts/GameStateMachineContext';
-import { parseToken } from '@/utils/message_handling';
+import { parseToken } from '@/services/MercureService';
 
 function WaitingRoom() {
-	const { gameState } = useContext(GameContext);
 	const stateMachine = useGameStateMachine();
-	// Use gameState.code instead of roomCode to match GameState type
-	const { players, code } = gameState || { players: [], code: '_____' };
+	const { players, code, hostId } = stateMachine;
 	
 	// Log state information for debugging without changing UI
-	console.log('[WaitingRoom] Rendering with:', {
-		gameStateExists: !!gameState,
-		codeProp: code,
+	console.log('[WaitingRoom] Rendering with state from StateMachine:', {
+		code: code,
 		playerCount: players?.length,
-		stateMachineState: stateMachine.flowState,
-		stateMachinePlayers: stateMachine.players?.length,
-		stateMachinePlayersData: stateMachine.players,
-		gameStatePlayers: gameState?.players,
-		stateMachineHostId: stateMachine.hostId,
-		gameStateHostId: gameState?.hostId
+		flowState: stateMachine.flowState,
+		playersInState: stateMachine.players,
+		hostIdInState: stateMachine.hostId
 	});
 	
 	// Log token data if available
@@ -68,41 +62,30 @@ function WaitingRoom() {
 	});
 
 	// Make sure we always display at least the host player card
-	const ensurePlayers = (): Player[] => {
-		// Prefer players from gameState if available, otherwise use stateMachine.players
-		const playersToShow = players && players.length > 0 ? [...players] : 
-			(stateMachine.players && stateMachine.players.length > 0 ? [...stateMachine.players] : []);
-		
-		// For debugging
-		console.log('[WaitingRoom] Current players:', {
-			gameStatePlayers: players ? players.length : 0,
-			stateMachinePlayers: stateMachine.players ? stateMachine.players.length : 0,
-			finalCount: playersToShow.length
-		});
-		
-		// Add host player if not present
-		const hostId = stateMachine.hostId || gameState?.hostId;
-		if (hostId) {
-			const hostPlayer = playersToShow.find(p => p.id === hostId);
-			if (!hostPlayer) {
-				// Create a placeholder for the host
-				const hostPlaceholder = {
-					id: hostId,
-					displayName: 'Game Host',
-					avatar: 'default'
-				};
-				console.log('[WaitingRoom] Adding host placeholder:', hostPlaceholder);
-				playersToShow.unshift(hostPlaceholder);
-			}
+	const getDisplayPlayers = (): Player[] => {
+		const displayPlayers = [...players];
+
+		// If the host is not in the players list yet, add a placeholder.
+		// This ensures the host card is always visible, even before their data has fully propagated.
+		if (hostId && !displayPlayers.some(p => p.id === hostId)) {
+			const hostPlaceholder: Player = {
+				id: hostId,
+				displayName: 'Game Host',
+				avatar: 'default' // Use a default avatar
+			};
+			console.log('[WaitingRoom] Host not found in player list. Injecting placeholder.');
+			displayPlayers.unshift(hostPlaceholder);
 		}
-		
-		return playersToShow;
+
+		return displayPlayers;
 	};
+
+	const displayPlayers = getDisplayPlayers();
 
 	return (
 		<ScrollView style={styles.scrollView}>
 			{/* Always ensure we have at least the host player to display */}
-			{ensurePlayers().map((player) => (
+			{displayPlayers.map((player) => (
 				<PlayerBar key={player.id} player={player} />
 			))}
 

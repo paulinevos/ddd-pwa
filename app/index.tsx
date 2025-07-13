@@ -1,9 +1,9 @@
-import HomeScreen from "@/components/HomeScreen";
+import HomeScreen from "@/screens/HomeScreen";
 import {useCookies} from "react-cookie";
-import GameView from "@/components/GameView";
+import GameView from "@/screens/GameView";
 // These imports are unused and can be removed
-// import AvatarSelectionScreen from "@/components/AvatarSelectionScreen";
-// import WaitingRoom from "@/components/WaitingRoom";
+// import AvatarSelectionScreen from "@/screens/AvatarSelectionScreen";
+// import WaitingRoom from "@/screens/WaitingRoom";
 
 
 function Index() {
