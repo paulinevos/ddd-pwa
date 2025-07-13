@@ -1,6 +1,6 @@
 import { EventSource } from 'eventsource';
 import { Message, MessageType } from '@/utils/messages';
-import { initGameState } from '@/utils/game_data';
+
 
 const KeyLastEventId = 'ddd_lastEventId';
 const hubUrl = `${process.env.EXPO_PUBLIC_MERCURE_HUB}/.well-known/mercure`;
@@ -50,9 +50,7 @@ export const parseToken = (token: string): TokenPayload => {
 export const connect = (token: string): EventSource => {
     const payload = parseToken(token);
 
-    if (payload.isHost()) {
-        initGameState(payload.userId, payload.code);
-    }
+
 
     const url = new URL(hubUrl);
     const base = 'https://localhost/.well-known/mercure/';

@@ -1,11 +1,11 @@
 import React, {Fragment, useEffect, useState} from "react";
 import {ScrollView, StyleSheet, Text, TextInput, TouchableOpacity} from "react-native";
-import {AvatarButton} from "@/components/ui/AvatarButton";
+import {AvatarButton} from "@/components/AvatarButton";
 import {parseToken, send} from "@/services/MercureService";
 import {useCookies} from "react-cookie";
 import {Message, MessageType} from "@/utils/messages";
 import { useGameStateMachine } from "@/contexts/GameStateMachineContext";
-import { useGameContext } from "@/context/GameContext";
+import { useGameContext } from "@/contexts/GameContext";
 import { selectAvatar } from "@/utils/GameStateMachine";
 
 const avatars = [
@@ -58,7 +58,14 @@ const AvatarSelectionScreen = () => {
                 console.log('[AvatarSelection] Player joined message sent');
                 
                 // Update state machine to transition to waiting room
-                selectAvatar(stateMachine, setGameState, parsed.userId, displayName, String(avatars[selected as number]));
+                                // Update the in-memory state machine
+                selectAvatar(stateMachine, parsed.userId, displayName, String(avatars[selected as number]));
+
+                // Now, trigger the state update in the context, which will persist it
+                setGameState({
+                  players: stateMachine.players,
+                  hostId: stateMachine.hostId,
+                });
                 
                 // Log state after successful submission
                 console.log('[AvatarSelection] State after submit:', {

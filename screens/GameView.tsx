@@ -6,9 +6,9 @@ import { MessageType } from "@/utils/messages";
 import WaitingRoom from "@/screens/WaitingRoom";
 import { useCookies } from "react-cookie";
 import { Player } from '@/lib/types';
-import { useGameContext } from "@/context/GameContext";
+import { useGameContext } from "@/contexts/GameContext";
 import AvatarSelectionScreen from "@/screens/AvatarSelectionScreen";
-import RuleSection from '@/components/ui/RuleSection';
+import RuleSection from '@/components/RuleSection';
 import { GameStateMachineProvider, useGameStateMachine } from "@/contexts/GameStateMachineContext";
 import { GameFlowState } from "@/utils/GameStateMachine";
 

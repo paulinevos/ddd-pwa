@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { GameState } from '@/lib/types';
 
 const KeyGameState = 'ddd_gameState';
@@ -38,17 +38,17 @@ export const GameContext = createContext<GameContextType>({
 export const GameContextProvider = ({ children }: { children: ReactNode }) => {
     const [gameState, setGameState] = useState<GameState | null>(() => fetchStateFromStorage());
 
-    const handleSetGameState = (state: GameState | null) => {
-        setGameState(state);
-        if (state) {
-            commitState(state);
+    useEffect(() => {
+        // This effect runs whenever gameState changes, handling persistence.
+        if (gameState) {
+            commitState(gameState);
         } else {
             destroyState();
         }
-    };
+    }, [gameState]);
 
     return (
-        <GameContext.Provider value={{ gameState, setGameState: handleSetGameState }}>
+        <GameContext.Provider value={{ gameState, setGameState }}>
             {children}
         </GameContext.Provider>
     );

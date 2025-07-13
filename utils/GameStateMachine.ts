@@ -1,4 +1,4 @@
-import { GameState, Player } from '@/lib/types';
+import { Player } from '@/lib/types';
 
 // Game flow states as defined in steps.md
 export enum GameFlowState {
@@ -123,7 +123,6 @@ export const joinGameAsPlayer = (machine: GameStateMachineState, gameCode: strin
 
 export const selectAvatar = (
   machine: GameStateMachineState, 
-  setGameState: (state: GameState) => void,
   playerId: string, 
   displayName: string, 
   avatar: string
@@ -181,13 +180,6 @@ export const selectAvatar = (
   // Use forceState to avoid invalid transition errors
   // This ensures we always reach waiting room regardless of current state
   machine.forceState(GameFlowState.WAITING_ROOM);
-
-  // Persist the new state to localStorage
-  const newGameState: GameState = {
-    players: machine.players,
-    hostId: machine.hostId,
-  };
-  setGameState(newGameState);
   
   console.log('[GameStateMachine] Transitioned to:', machine.flowState);
 };

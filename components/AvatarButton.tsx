@@ -1,11 +1,13 @@
-import {Image, Text, TextProps, TouchableOpacity} from "react-native";
-import React, {useState} from "react";
+import {Image, TouchableOpacity} from "react-native";
+import React from "react";
 
 type AvatarButtonProps = {
-    image: string;
+    handlePress: (image: any) => void;
+    image: any;
+    selected: boolean;
 };
 
-const AvatarButton = ({handlePress, image, selected}) => {
+const AvatarButton = ({handlePress, image, selected}: AvatarButtonProps) => {
     return (
       <TouchableOpacity
         onPress={ () => handlePress(image) }

@@ -3,7 +3,7 @@ import { useFonts } from 'expo-font';
 import { Jua_400Regular } from '@expo-google-fonts/jua';
 import { VT323_400Regular } from '@expo-google-fonts/vt323';
 import { useEffect } from 'react';
-import { GameContextProvider } from '@/context/GameContext';
+import { GameContextProvider } from '@/contexts/GameContext';
 import { GameStateMachineProvider } from '@/contexts/GameStateMachineContext';
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.

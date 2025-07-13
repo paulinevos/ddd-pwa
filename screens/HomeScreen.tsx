@@ -1,28 +1,29 @@
 import CodeInput from '@/components/CodeInput';
 import { Image, SafeAreaView, Text, StyleSheet } from 'react-native';
 import { useState, useEffect } from 'react';
-import { Button, ButtonColor } from '@/components/ui/Button';
-import Loading from '@/components/ui/Loading';
+import { Button, ButtonColor } from '@/components/Button';
+import Loading from '@/components/Loading';
 import { useCookies } from 'react-cookie';
 import { hostGame, joinGame } from '@/utils/token_server';
 import logo from '@/assets/images/ddd_logo_cards.png';
 import drankyLg from '@/assets/images/avatars/dranky-lg.png';
 import theme from '@/theme';
-import { destroyState } from '@/context/GameContext';
+import { useGameContext } from '@/contexts/GameContext';
 
 function HomeScreen() {
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState('');
 	const [code, setCode] = useState('');
 	const [cookies, setCookie] = useCookies(['mercureAuthorization']);
+	const { setGameState } = useGameContext();
 
 	// Clear stale game state if no auth cookie is present
 	useEffect(() => {
 		if (!cookies.mercureAuthorization) {
 			console.log('No auth cookie found - clearing any stale game state');
-			destroyState();
+			setGameState(null);
 		}
-	}, [cookies.mercureAuthorization]);
+	}, [cookies.mercureAuthorization, setGameState]);
 
 	const getHostToken = async (setCookie: Function) => {
 		const { token, error } = await hostGame();

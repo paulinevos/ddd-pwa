@@ -3,7 +3,7 @@ import PlayerBar from '@/components/PlayerBar';
 import { Player } from '@/lib/types';
 import { ScrollView, StyleSheet, View, Text } from 'react-native';
 import theme from '@/theme';
-import { Button, ButtonColor } from '@/components/ui/Button';
+import { Button, ButtonColor } from '@/components/Button';
 import { useGameStateMachine } from '@/contexts/GameStateMachineContext';
 import { parseToken } from '@/services/MercureService';
 

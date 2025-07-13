@@ -1,7 +1,5 @@
-import CodeInput from "@/components/CodeInput";
-import {Image, Text, TouchableOpacity} from "react-native";
+import {Image, TouchableOpacity} from "react-native";
 import React from "react";
-import { Button, ButtonColor, ButtonProps } from "@/components/ui/Button";
 
 const handlePress = () => alert('hehe')
 function GameMenu() {

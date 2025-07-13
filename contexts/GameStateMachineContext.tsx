@@ -8,7 +8,7 @@ import {
 } from '../utils/GameStateMachine';
 import { useCookies } from 'react-cookie';
 import { parseToken } from '@/services/MercureService';
-import { useGameContext } from '@/context/GameContext';
+import { useGameContext } from '@/contexts/GameContext';
 import { Player } from '@/lib/types';
 
 // Create the context
