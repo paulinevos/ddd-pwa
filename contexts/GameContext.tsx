@@ -9,16 +9,16 @@ export const commitState = (state: GameState) =>
 export const fetchStateFromStorage = (): GameState | null => {
 	if (typeof window !== 'undefined') {
 		const json = localStorage.getItem(KeyGameState);
-        if (!json) return null;
+		if (!json) return null;
 		try {
-		    return JSON.parse(json) as GameState;
-        } catch (e) {
-            console.error("Failed to parse game state from storage", e);
-            localStorage.removeItem(KeyGameState); // Clear corrupted state
-            return null;
-        }
+			return JSON.parse(json) as GameState;
+		} catch (e) {
+			console.error('Failed to parse game state from storage', e);
+			localStorage.removeItem(KeyGameState); // Clear corrupted state
+			return null;
+		}
 	}
-    return null;
+	return null;
 };
 
 export const destroyState = () => {

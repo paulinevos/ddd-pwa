@@ -1,12 +1,11 @@
 import React, {Fragment, useEffect, useState} from "react";
 import {ScrollView, StyleSheet, Text, TextInput, TouchableOpacity} from "react-native";
 import {AvatarButton} from "@/components/AvatarButton";
-import {parseToken, send} from "@/services/MercureService";
+import {parseToken} from "@/services/MercureService";
+import { handlePlayerJoin } from '@/services/GameActions';
 import {useCookies} from "react-cookie";
-import {Message, MessageType} from "@/utils/messages";
 import { useGameStateMachine } from "@/contexts/GameStateMachineContext";
-import { useGameContext } from "@/contexts/GameContext";
-import { selectAvatar } from "@/utils/GameStateMachine";
+import { useGameContext } from '@/contexts/GameContext';
 
 const avatarImages = {
     'cocky.png': require(`../assets/images/avatars/cocky.png`),
@@ -50,31 +49,17 @@ const AvatarSelectionScreen = () => {
             });
 
             try {
-                // Send message to backend
-                await send(token, new Message(MessageType.PlayerJoined, {
-                    id: parsed.userId,
-                    displayName,
-                    avatar: avatars[selected as number]
-                }));
-                console.log('[AvatarSelection] Player joined message sent');
-                
-                // Update state machine to transition to waiting room
-                                // Update the in-memory state machine
-                selectAvatar(stateMachine, parsed.userId, displayName, avatars[selected as number]);
-
-                // Now, trigger the state update in the context, which will persist it
-                setGameState({
-                  players: stateMachine.players,
-                  hostId: stateMachine.hostId,
-                });
-                
-                // Log state after successful submission
-                console.log('[AvatarSelection] State after submit:', {
-                    stateMachineState: stateMachine.flowState,
-                    stateMachinePlayers: stateMachine.players,
-                    stateMachineHostId: stateMachine.hostId,
-                    playerInStateMachine: stateMachine.players.some(p => p.id === parsed.userId)
-                });
+                await handlePlayerJoin(
+                    token,
+                    {
+                        id: parsed.userId,
+                        displayName,
+                        avatar: avatars[selected as number],
+                        isHost: parsed.isHost(),
+                    },
+                    stateMachine,
+                    setGameState
+                );
             } catch (error) {
                 console.error('[AvatarSelection] Error during avatar submission:', error);
             }
