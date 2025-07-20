@@ -1,27 +1,27 @@
 import HomeScreen from "@/screens/HomeScreen";
-import {useCookies} from "react-cookie";
+import { useCookies } from "react-cookie";
 import GameView from "@/screens/GameView";
-// These imports are unused and can be removed
-// import AvatarSelectionScreen from "@/screens/AvatarSelectionScreen";
-// import WaitingRoom from "@/screens/WaitingRoom";
-
+import AppLayout from "@/components/AppLayout";
 
 function Index() {
-    const [ cookies ] = useCookies(['mercureAuthorization'])
+    const [cookies] = useCookies(['mercureAuthorization']);
+    const isLoggedIn = !!cookies.mercureAuthorization;
 
-    // The GameView component already includes the GameStateMachineProvider
-    // but we can also wrap the entire app for consistent state management
-    
-    if (cookies.mercureAuthorization) {
-        // GameView has its own GameStateMachineProvider internally
-        return <GameView />
+    // For logged-in users, show GameView with GameMenu
+    if (isLoggedIn) {
+        return (
+            <AppLayout showGameMenu={true}>
+                <GameView />
+            </AppLayout>
+        );
     }
 
+    // For non-logged-in users, show HomeScreen without GameMenu
     return (
-        // We can also wrap HomeScreen in the GameStateMachineProvider
-        // for consistent state management throughout the app
-        <HomeScreen />
-    )
+        <AppLayout showGameMenu={false}>
+            <HomeScreen />
+        </AppLayout>
+    );
 }
 
-export default Index
+export default Index;

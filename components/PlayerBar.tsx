@@ -7,10 +7,10 @@ const getAvatarImage = (avatarName: string) => {
 	console.log('[PlayerBar] Loading avatar:', avatarName);
 	// Default to cocky avatar as fallback
 	let avatarImage = require('@/assets/images/avatars/cocky.png');
-	
+
 	// Map avatar names to their image paths
 	try {
-		switch(avatarName) {
+		switch (avatarName) {
 			case 'angry':
 				avatarImage = require('@/assets/images/avatars/angry.png');
 				break;
@@ -28,12 +28,12 @@ const getAvatarImage = (avatarName: string) => {
 				break;
 			default:
 				console.log('[PlayerBar] Unknown avatar name:', avatarName);
-				// Keep default avatarImage
+			// Keep default avatarImage
 		}
 	} catch (error) {
 		console.error('[PlayerBar] Error loading avatar image:', error);
 	}
-	
+
 	return avatarImage;
 };
 
@@ -43,7 +43,7 @@ interface PlayerProps {
 		id: string;
 		displayName: string;
 		avatar: string;
-	}
+	};
 }
 
 function PlayerBar({ player }: PlayerProps) {
@@ -59,6 +59,7 @@ function PlayerBar({ player }: PlayerProps) {
 			borderWidth: 2,
 			borderColor: 'rgba(0,0,0,1)',
 			borderStyle: 'solid',
+			marginTop: '2%',
 			padding: theme.spacing.sm, // Add some padding to the container itself
 		},
 		text: {

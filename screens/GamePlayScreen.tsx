@@ -2,12 +2,7 @@ import React from 'react';
 import PlayerBar from '@/components/PlayerBar';
 
 import { Player } from '@/lib/types';
-import {
-	ScrollView,
-	StyleSheet,
-	View,
-	Text,
-} from 'react-native';
+import { ScrollView, StyleSheet, View, Text } from 'react-native';
 import theme from '@/theme';
 import { Button, ButtonColor } from '@/components/Button';
 import { useGameStateMachine } from '@/contexts/GameStateMachineContext';
@@ -52,17 +47,23 @@ function GamePlayScreen() {
 
 	const styles = StyleSheet.create({
 		scrollView: {
-			height: '100%',
-			width: '120%',
-			padding: theme.spacing.sm, // Use a spacing token
-			top: 77 + 20,
+			flex: 1,
+		},
+		container: {
+			flex: 1,
+			width: '100%',
+			padding: theme.spacing.sm,
+            paddingBottom: 160,
+		},
+		content: {
+			flex: 1,
 		},
 		buttonContainer: {
 			display: 'flex',
 			flexDirection: 'column',
 			alignItems: 'center',
 			justifyContent: 'center',
-			marginTop: '80%',
+			marginTop: '5%',
 		},
 		textStyle: {
 			fontFamily: theme.typography.fontFamilyPrimary,
@@ -96,11 +97,15 @@ function GamePlayScreen() {
 	const displayPlayers = getDisplayPlayers();
 
 	return (
-		<ScrollView style={styles.scrollView}>
-			{/* Always ensure we have at least the host player to display */}
-			{displayPlayers.map((player) => (
-				<PlayerBar key={player.id} player={player} />
-			))}
+		<View style={styles.container}>
+			<View style={styles.content}>
+				<ScrollView style={styles.scrollView}>
+					{/* Always ensure we have at least the host player to display */}
+					{displayPlayers.map((player) => (
+						<PlayerBar key={player.id} player={player} />
+					))}
+				</ScrollView>
+			</View>
 
 			<View style={styles.buttonContainer}>
 				{flowState === GameFlowState.WAITING_ROOM && (
@@ -130,7 +135,7 @@ function GamePlayScreen() {
 					</View>
 				)}
 			</View>
-		</ScrollView>
+		</View>
 	);
 }
 

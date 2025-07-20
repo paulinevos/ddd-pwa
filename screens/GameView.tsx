@@ -111,7 +111,11 @@ function GameViewContent() {
 						(p: Player) => p.id === (payload as Player).id
 					);
 					if (!playerExists) {
-						addPlayer(stateMachine, payload as Player, stateMachine.onStateChange);
+						addPlayer(
+							stateMachine,
+							payload as Player,
+							stateMachine.onStateChange
+						);
 					}
 					break;
 				default:
@@ -133,7 +137,7 @@ function GameViewContent() {
 				justifyContent: 'center',
 				alignItems: 'center',
 				backgroundColor: '#EBFFFE',
-				paddingHorizontal: '10%',
+				// paddingHorizontal: '10%',
 			}}
 		>
 			{stateMachine && (
