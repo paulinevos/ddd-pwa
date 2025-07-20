@@ -122,6 +122,29 @@ export const addPlayer = (
   }
 };
 
+// Update the entire player list (used for syncing)
+export const updatePlayers = (
+  machine: GameStateMachineState,
+  newPlayers: Player[],
+  onStateChange: (state: GameStateMachineState) => void
+) => {
+  // Preserve the host ID if it's set
+  const currentHost = machine.players.find(p => p.isHost);
+  const newHost = newPlayers.find(p => p.isHost);
+  
+  // If we have a current host but no new host, preserve the current host
+  if (currentHost && !newHost) {
+    const updatedNewPlayers = newPlayers.map(p => 
+      p.id === currentHost.id ? { ...p, isHost: true } : p
+    );
+    machine.players = updatedNewPlayers;
+  } else {
+    machine.players = newPlayers;
+  }
+  
+  onStateChange(machine);
+};
+
 // Helper functions for common state changes
 export const transitionToHome = (machine: GameStateMachineState) => {
   machine.forceState(GameFlowState.HOME);

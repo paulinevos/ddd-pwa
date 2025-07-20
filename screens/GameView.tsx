@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useCallback, useEffect, useContext } from 'react';
 import {
 	SafeAreaView,
 	Text,
@@ -7,24 +7,20 @@ import {
 	Image,
 	Dimensions,
 } from 'react-native';
-import { EventSource } from 'eventsource';
-import {
-	connect,
-	activeSubscriptions,
-	parseToken,
-} from '@/services/MercureService';
-import { MessageType } from '@/utils/messages';
-import GamePlayScreen from '@/screens/GamePlayScreen';
-import RuleSection from '@/components/RuleSection';
 import { useCookies } from 'react-cookie';
 import { Player } from '@/lib/types';
-import { useGameContext } from '@/contexts/GameContext';
-import AvatarSelectionScreen from '@/screens/AvatarSelectionScreen';
+import { connect, send, parseToken } from '@/services/MercureService';
+import { MessageType, Message } from '@/utils/messages';
+import { GameContext } from '@/contexts/GameContext';
 import {
 	GameStateMachineProvider,
 	useGameStateMachine,
 } from '@/contexts/GameStateMachineContext';
-import { GameFlowState, addPlayer } from '@/utils/GameStateMachine';
+import { GameFlowState, addPlayer, updatePlayers } from '@/utils/GameStateMachine';
+import AvatarSelectionScreen from './AvatarSelectionScreen';
+import GamePlayScreen from './GamePlayScreen';
+import RuleSection from '@/components/RuleSection';
+import { EventSource } from 'eventsource';
 
 // Main GameView component wrapped with state machine provider
 function GameViewWithProvider() {
@@ -36,10 +32,12 @@ function GameViewWithProvider() {
 }
 
 // Inner GameView content that uses the state machine
-function GameViewContent() {
+function GameViewContent(): JSX.Element {
 	const [cookies] = useCookies(['mercureAuthorization']);
-	const { gameState } = useGameContext();
+	const { gameState } = useContext(GameContext);
 	const stateMachine = useGameStateMachine();
+
+
 
 	console.log('[GameView] Initial render with:', {
 		cookie: cookies.mercureAuthorization ? 'Present' : 'Not present',
@@ -68,6 +66,16 @@ function GameViewContent() {
 
 	// Initialize or update game state when needed
 
+	// Function to send the full player list to all clients (host only)
+	const broadcastPlayerList = useCallback((token: string, players: Player[]) => {
+		try {
+			send(token, new Message(MessageType.SyncPlayers, { players }));
+			console.log('[GameView] Broadcasted player list to all clients');
+		} catch (error) {
+			console.error('[GameView] Error broadcasting player list:', error);
+		}
+	}, []);
+
 	// Connect to event source for real-time updates
 	useEffect(() => {
 		// Only connect if we have an auth token
@@ -83,43 +91,68 @@ function GameViewContent() {
 			code: parsed.code,
 		});
 
-		// Set up host-specific subscription if user is host
-		if (parsed.isHost()) {
-			console.log('[GameView] User is host, setting up subscription listener');
-			const subscriptions = activeSubscriptions(token);
-			subscriptions.addEventListener('message', (e: MessageEvent<string>) => {
-				console.log('[GameView] Subscription update:', e);
-			});
-		}
-
 		// Connect to main event source
 		const events: EventSource = connect(token);
 		console.log('[GameView] EventSource connected');
 
+		// If we're a guest, request the full player list
+		if (!parsed.isHost()) {
+			send(token, new Message(MessageType.RequestPlayerList, {}));
+		}
+
 		// Listen for message events
 		events.addEventListener('message', (e: MessageEvent<string>) => {
-			console.log('[GameView] Message received:', e.data);
-			const data = JSON.parse(e.data);
-			const { type, payload } = data;
+			try {
+				console.log('[GameView] Message received:', e.data);
+				const data = JSON.parse(e.data);
+				const { type, payload } = data;
 
-			// Handle different message types
-			switch (type) {
-				case MessageType.PlayerJoined:
-					// Add player to state machine if they don't already exist
-					// eslint-disable-next-line no-case-declarations
-					const playerExists = stateMachine.players.some(
-						(p: Player) => p.id === (payload as Player).id
-					);
-					if (!playerExists) {
-						addPlayer(
-							stateMachine,
-							payload as Player,
-							stateMachine.onStateChange
+				// Handle different message types
+				switch (type) {
+					case MessageType.PlayerJoined:
+						// Add player to state machine if they don't already exist
+						const playerExists = stateMachine.players.some(
+							(p: Player) => p.id === (payload as Player).id
 						);
-					}
-					break;
-				default:
-					console.log('[GameView] Unhandled message type:', type);
+						if (!playerExists) {
+							console.log('[GameView] Adding new player:', payload);
+							addPlayer(
+								stateMachine,
+								payload as Player,
+								stateMachine.onStateChange
+							);
+
+							// If we're the host, broadcast the updated player list
+							if (parsed.isHost()) {
+								// The player has already been added to stateMachine.players by addPlayer
+								// So we can just broadcast the current state
+								broadcastPlayerList(token, stateMachine.players);
+							} else if (payload.id !== parsed.userId) {
+								// If we're a guest and this is another player joining, request the full player list
+								send(token, new Message(MessageType.RequestPlayerList, {}));
+							}
+						}
+						break;
+
+					case MessageType.SyncPlayers:
+						// Update local player list with the one from host
+						console.log('[GameView] Received player list sync:', payload.players);
+						updatePlayers(stateMachine, payload.players, stateMachine.onStateChange);
+						break;
+
+					case MessageType.RequestPlayerList:
+						// Only the host should respond to player list requests
+						if (parsed.isHost()) {
+							console.log('[GameView] Received player list request, broadcasting current players');
+							broadcastPlayerList(token, stateMachine.players);
+						}
+						break;
+
+					default:
+						console.log('[GameView] Unhandled message type:', type);
+				}
+			} catch (error) {
+				console.error('[GameView] Error handling message:', error, e.data);
 			}
 		});
 
@@ -128,7 +161,7 @@ function GameViewContent() {
 			console.log('[GameView] Cleanup event source');
 			events.close();
 		};
-	}, [cookies.mercureAuthorization, stateMachine]);
+	}, [cookies.mercureAuthorization, broadcastPlayerList, stateMachine]);
 
 	return (
 		<SafeAreaView

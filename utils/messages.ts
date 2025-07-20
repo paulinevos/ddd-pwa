@@ -1,18 +1,18 @@
-enum MessageType {
+export enum MessageType {
     PlayerJoined = 'PlayerJoined',
+    SyncPlayers = 'SyncPlayers',
+    RequestPlayerList = 'RequestPlayerList',
     InitiateGameState = 'InitiateGameState',
     GameStarted = 'GameStarted',
     GameEnded = 'GameEnded',
 }
 
-class Message {
-    constructor(type: MessageType, payload: object = {}) {
-        this.type = type
-        this.payload = payload
+export class Message {
+    type: MessageType;
+    payload: any;
+
+    constructor(type: MessageType, payload: any = {}) {
+        this.type = type;
+        this.payload = payload;
     }
-
-    type: MessageType
-    payload: object
 }
-
-export { MessageType, Message }
