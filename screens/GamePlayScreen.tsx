@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import PlayerBar from '@/components/PlayerBar';
-
+import HostTip from '@/components/HostTip';
 import { Player } from '@/lib/types';
 import { ScrollView, StyleSheet, View, Text } from 'react-native';
 import theme from '@/theme';
@@ -14,6 +14,24 @@ function GamePlayScreen() {
 	const stateMachine = useGameStateMachine();
 	const { transition } = stateMachine;
 	const { players, code, hostId } = stateMachine;
+
+	// Determine if current user is the host using the existing parseToken function
+	const isHost = useMemo(() => {
+		try {
+			const cookies = document.cookie.split('; ');
+			const authCookie = cookies.find((cookie) =>
+				cookie.startsWith('mercureAuthorization=')
+			);
+			if (authCookie) {
+				const token = authCookie.split('=')[1];
+				const parsed = parseToken(token);
+				return parsed.isHost();
+			}
+		} catch (error) {
+			console.error('[GamePlayScreen] Error checking if user is host:', error);
+		}
+		return false;
+	}, []);
 
 	// Log state information for debugging without changing UI
 	console.log('[WaitingRoom] Rendering with state from StateMachine:', {
@@ -53,7 +71,7 @@ function GamePlayScreen() {
 			flex: 1,
 			width: '100%',
 			padding: theme.spacing.sm,
-            paddingBottom: 160,
+			paddingBottom: 160,
 		},
 		content: {
 			flex: 1,
@@ -96,6 +114,19 @@ function GamePlayScreen() {
 
 	const displayPlayers = getDisplayPlayers();
 
+	// Debug logging
+	console.log('[GamePlayScreen] Debug:', {
+		isHost,
+		flowState,
+		shouldShowHostTip: isHost && flowState === GameFlowState.WAITING_ROOM,
+		hostId,
+		players: players?.map((p) => ({
+			id: p.id,
+			displayName: p.displayName,
+			isHost: p.isHost,
+		})),
+	});
+
 	return (
 		<View style={styles.container}>
 			<View style={styles.content}>
@@ -104,6 +135,9 @@ function GamePlayScreen() {
 					{displayPlayers.map((player) => (
 						<PlayerBar key={player.id} player={player} />
 					))}
+					{isHost && flowState === GameFlowState.WAITING_ROOM && (
+						<HostTip isHost={isHost} />
+					)}
 				</ScrollView>
 			</View>
 
