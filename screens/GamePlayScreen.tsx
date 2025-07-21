@@ -1,7 +1,6 @@
 import React, { useMemo } from 'react';
 import PlayerBar from '@/components/PlayerBar';
 import HostTip from '@/components/HostTip';
-import { Player } from '@/lib/types';
 import { ScrollView, StyleSheet, View, Text } from 'react-native';
 import theme from '@/theme';
 import { Button, ButtonColor } from '@/components/Button';
@@ -91,28 +90,7 @@ function GamePlayScreen() {
 		},
 	});
 
-	// Make sure we always display at least the host player card
-	const getDisplayPlayers = (): Player[] => {
-		const displayPlayers = [...players];
-
-		// If the host is not in the players list yet, add a placeholder.
-		// This ensures the host card is always visible, even before their data has fully propagated.
-		if (hostId && !displayPlayers.some((p) => p.id === hostId)) {
-			const hostPlaceholder: Player = {
-				id: hostId,
-				displayName: 'Game Host',
-				avatar: 'default', // Use a default avatar
-			};
-			console.log(
-				'[WaitingRoom] Host not found in player list. Injecting placeholder.'
-			);
-			displayPlayers.unshift(hostPlaceholder);
-		}
-
-		return displayPlayers;
-	};
-
-	const displayPlayers = getDisplayPlayers();
+	// Use the players array directly since we're not modifying it
 
 	// Debug logging
 	console.log('[GamePlayScreen] Debug:', {
@@ -131,8 +109,8 @@ function GamePlayScreen() {
 		<View style={styles.container}>
 			<View style={styles.content}>
 				<ScrollView style={styles.scrollView}>
-					{/* Always ensure we have at least the host player to display */}
-					{displayPlayers.map((player) => (
+					{/* Map over players array to render each player */}
+					{players.map((player) => (
 						<PlayerBar key={player.id} player={player} />
 					))}
 					{isHost && flowState === GameFlowState.WAITING_ROOM && (
