@@ -113,7 +113,7 @@ function GamePlayScreen() {
 					{players.map((player) => (
 						<PlayerBar key={player.id} player={player} />
 					))}
-					{isHost && flowState === GameFlowState.WAITING_ROOM && (
+					{isHost && flowState === GameFlowState.WAITING_ROOM && players.length >= 3 && (
 						<HostTip isHost={isHost} />
 					)}
 				</ScrollView>
