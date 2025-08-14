@@ -1,4 +1,4 @@
-import { StyleSheet, TouchableOpacity, Text, Image, View } from 'react-native';
+import { StyleSheet, Text, Image, View } from 'react-native';
 import React from 'react';
 import theme from '@/theme'; // Using the new alias
 
@@ -44,23 +44,30 @@ interface PlayerProps {
 		displayName: string;
 		avatar: string;
 	};
+	isCurrentPlayer?: boolean;
 }
 
-function PlayerBar({ player }: PlayerProps) {
+function PlayerBar({ player, isCurrentPlayer = false }: PlayerProps) {
 	console.debug('PLAYER', player);
 	const styles = StyleSheet.create({
+		outerContainer: {
+			borderRadius: theme.borders.radiusMd,
+			borderWidth: isCurrentPlayer ? 4 : 0,
+			borderColor: 'rgba(247, 252, 185, 1)',
+			borderStyle: 'solid',
+			// marginHorizontal: theme.spacing.md, // Add horizontal margin
+			overflow: 'hidden', // Prevent any content from overflowing
+		},
 		container: {
 			position: 'relative',
 			backgroundColor: theme.colors.accentGreen,
 			borderRadius: theme.borders.radiusMd,
 			...theme.shadows.medium,
-			height: 99,
-			width: '100%',
+			height: 95,
+			width: '100%', // Take full width of parent
 			borderWidth: 2,
 			borderColor: 'rgba(0,0,0,1)',
 			borderStyle: 'solid',
-			marginTop: '2%',
-			padding: theme.spacing.sm, // Add some padding to the container itself
 		},
 		text: {
 			color: theme.colors.textDark,
@@ -88,8 +95,8 @@ function PlayerBar({ player }: PlayerProps) {
 		},
 	});
 
-	return (
-		<TouchableOpacity style={styles.container}>
+	const content = (
+		<View style={styles.container}>
 			<Text style={styles.text}>{player.displayName}</Text>
 			<View style={styles.avatarContainer}>
 				<Image
@@ -98,7 +105,13 @@ function PlayerBar({ player }: PlayerProps) {
 					resizeMode="contain"
 				/>
 			</View>
-		</TouchableOpacity>
+		</View>
+	);
+
+	return isCurrentPlayer ? (
+		<View style={styles.outerContainer}>{content}</View>
+	) : (
+		<View style={{ marginTop: '2%' }}>{content}</View>
 	);
 }
 

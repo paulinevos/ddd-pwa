@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import {
 	Text,
 	StyleSheet,
-	TouchableWithoutFeedback,
+	Pressable,
 	Animated,
 	View,
 } from 'react-native';
@@ -45,7 +45,10 @@ const HostTip: React.FC<HostTipProps> = ({ isHost }) => {
 	if (!isVisible) return null;
 
 	return (
-		<TouchableWithoutFeedback onPress={handleDismiss}>
+		<Pressable
+			onPress={handleDismiss}
+			style={[StyleSheet.absoluteFill, { zIndex: 9999, elevation: 9999 }]}
+		>
 			<Animated.View style={[styles.container, { opacity: fadeAnim }]}>
 				<View style={styles.header}>
 					<Text style={styles.title}>HOST TIP:</Text>
@@ -57,7 +60,7 @@ const HostTip: React.FC<HostTipProps> = ({ isHost }) => {
 					now. (you won't be able to change this later!)
 				</Text>
 			</Animated.View>
-		</TouchableWithoutFeedback>
+		</Pressable>
 	);
 };
 
@@ -74,6 +77,8 @@ const styles = StyleSheet.create({
 		borderRadius: 8,
 		padding: 16,
 		marginVertical: 16,
+		zIndex: 10000,
+		elevation: 10000,
 	} as const,
 	header: {
 		flexDirection: 'row',

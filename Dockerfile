@@ -23,5 +23,6 @@ WORKDIR /opt/ddd-pwa
 #uncomment when not in dev
 # COPY ./ .
 
+
 ENTRYPOINT ["npm", "run"]
 CMD ["web"]

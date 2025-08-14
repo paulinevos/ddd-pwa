@@ -1,4 +1,5 @@
 import { Player } from '@/lib/types';
+import { isReorderingAllowed } from './playerUtils';
 
 // Game flow states as defined in steps.md
 export enum GameFlowState {
@@ -167,6 +168,37 @@ export const joinGameAsPlayer = (machine: GameStateMachineState, gameCode: strin
   machine.transition(GameFlowState.SELECTING_AVATAR);
 };
 
+/**
+ * Reorders players in the game
+ * @param machine Current state machine
+ * @param newOrder Array of player IDs in the new order
+ * @param onStateChange Callback when state changes
+ */
+export const reorderPlayers = (
+  machine: GameStateMachineState,
+  newOrder: string[],
+  onStateChange: (state: GameStateMachineState) => void
+) => {
+  if (!isReorderingAllowed(machine.flowState, machine.userRole === UserRole.HOST)) {
+    console.log('[GameStateMachine] Reordering not allowed in current state');
+    return;
+  }
+
+  // Create a map of player IDs to their data
+  const playerMap = new Map(machine.players.map(p => [p.id, p]));
+  
+  // Rebuild players array in new order, preserving player data
+  const reorderedPlayers = newOrder
+    .map(id => playerMap.get(id))
+    .filter((p): p is Player => p !== undefined);
+
+  // If we missed any players (shouldn't happen), append them
+  const missingPlayers = machine.players.filter(p => !newOrder.includes(p.id));
+  machine.players = [...reorderedPlayers, ...missingPlayers];
+  
+  onStateChange(machine);
+};
+
 export const selectAvatar = (
   machine: GameStateMachineState, 
   playerId: string, 
@@ -177,7 +209,8 @@ export const selectAvatar = (
   const newPlayer: Player = {
     id: playerId,
     displayName,
-    avatar
+    avatar,
+    isHost: machine.userRole === UserRole.HOST
   };
   
   console.log('[GameStateMachine] selectAvatar called with:', {
